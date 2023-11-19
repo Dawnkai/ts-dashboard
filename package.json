@@ -1,0 +1,39 @@
+{
+  "name": "ttn-dashboard",
+  "version": "1.0.0",
+  "description": "React dashboard for ThingSpeak measurements",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "parcel index.html",
+    "build": "parcel build index.html",
+    "server:start": "flask --app server/main run",
+    "server:debug": "flask --app server/main run --debug"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dawnkai/ttn-dashboard.git"
+  },
+  "keywords": [
+    "React",
+    "ThingSpeak",
+    "IoT",
+    "Typescript"
+  ],
+  "author": "Maciej Kleban, Jakub Ratajczyk",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Dawnkai/ttn-dashboard/issues"
+  },
+  "homepage": "https://github.com/Dawnkai/ttn-dashboard#readme",
+  "dependencies": {
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "parcel-bundler": "^1.12.5",
+    "typescript": "^5.2.2"
+  }
+}
