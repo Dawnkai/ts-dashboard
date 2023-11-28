@@ -30,6 +30,7 @@ yarn start
 ```
 
 Frontend availiable here: http://localhost:1234
+
 Backend available here: http://localhost:5000
 
 The Things Network API endpoints description:
