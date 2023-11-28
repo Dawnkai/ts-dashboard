@@ -31,3 +31,9 @@ yarn start
 
 Frontend availiable here: http://localhost:1234
 Backend available here: http://localhost:5000
+
+The Things Network API endpoints description:
+https://www.mathworks.com/help/thingspeak/rest-api.html?s_tid=CRUX_lftnav
+
+Design inspired by:
+https://dribbble.com/shots/20354298-IoT-Dashboard
