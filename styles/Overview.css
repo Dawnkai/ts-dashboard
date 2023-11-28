@@ -1,0 +1,24 @@
+.card-icon {
+    max-width: 50px;
+}
+
+.card-container {
+    padding: 1.25rem;
+    border-radius: 10px;
+}
+
+.card-value {
+    font-size: 1.5rem;
+}
+
+.card-title {
+    margin-bottom: 2rem;
+    font-size: 1.25rem;
+    text-align: center;
+    font-weight: bold;
+}
+
+.card-content {
+    display: flex;
+    gap: 2rem;
+}

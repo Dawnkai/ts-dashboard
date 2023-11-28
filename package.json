@@ -33,7 +33,8 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "parcel-bundler": "^1.12.5",
+    "parcel": "^2.10.3",
+    "process": "^0.11.10",
     "typescript": "^5.2.2"
   }
 }

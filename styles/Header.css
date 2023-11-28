@@ -1,0 +1,13 @@
+.nav-menu-btn {
+    border: none;
+    background-color: transparent;
+}
+.nav-menu-btn:hover {
+    background-color: transparent;
+    /* Bootstrap's default color for primary, but 15% darker */
+    color: #024dbc;
+}
+.login-icon {
+    /* Default fontawesome user icon is too small, make it bigger */
+    font-size: 1.25rem;
+}

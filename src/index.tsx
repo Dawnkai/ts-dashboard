@@ -1,13 +1,16 @@
 import React from "react";
-import { render } from "react-dom";
-import { Hello } from "./Hello";
+import ReactDOM from 'react-dom/client';
+import Overview from "./Overview";
+import Header from "./Header";
  
 const App = () => {
     return (
-        <div>
-            <Hello compiler="Parcel" framework="ReactJS" />
+        <div className="container">
+            <Header/>
+            <Overview />
         </div>
     );
 };
- 
-render(<App />, document.getElementById("app"));
+
+const root = ReactDOM.createRoot(document.getElementById("app") as HTMLElement);
+root.render(<App />);
