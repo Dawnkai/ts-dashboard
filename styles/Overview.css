@@ -4,11 +4,36 @@
 
 .card-container {
     padding: 1.25rem;
-    border-radius: 10px;
+    border-width: 7px;
+    height: 200px;
+    width: 400px;
+
+    background-clip: padding-box;
+    border: solid 5px transparent;
+    border-radius: 10px
+}
+
+.card-container:hover {
+    cursor: pointer;
+    box-shadow: 10px 5px 5px black;
+}
+
+/* Hack for gradient border, more on it here: https://css-tricks.com/gradient-borders-in-css/ */
+.card-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    margin: -7px;
+    border-radius: inherit;
+    background: linear-gradient(45deg, rgba(102,76,150,1) 0%, rgba(253,29,29,1) 50%, rgba(247,230,29,1) 100%);
 }
 
 .card-value {
-    font-size: 1.5rem;
+    font-size: 2rem;
 }
 
 .card-title {
@@ -21,4 +46,8 @@
 .card-content {
     display: flex;
     gap: 2rem;
+}
+
+.sensor-value {
+    font-weight: 700;
 }

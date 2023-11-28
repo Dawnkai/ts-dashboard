@@ -9,5 +9,6 @@
 }
 .login-icon {
     /* Default fontawesome user icon is too small, make it bigger */
-    font-size: 1.25rem;
+    font-size: 2rem !important;
+    color: black;
 }

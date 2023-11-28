@@ -1,0 +1,13 @@
+body {
+    margin: 0;
+    padding: 0.5px;
+    border: 0;
+    box-sizing: border-box;
+    background-color: darkgrey;
+}
+
+* {
+    font-family: 'Lobster', sans-serif;
+    font-family: 'Poppins', sans-serif;
+    font-family: 'Roboto', sans-serif;
+}
