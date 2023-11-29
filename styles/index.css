@@ -1,13 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700&display=swap');
+
+:root {
+    --bg: #f5f6f8;
+    --white: #fff;
+    --black: #000;
+    --text: #030538;
+    --primary: #ff5e5e;
+    --primary-accent: #fffdfd;
+    --red: #ff5e5e;
+    --blue: #3b86ff;
+    --green: #0fc177;
+    --yellow: #f7d31d;
+    --orange: #ff8c42;
+}
+
 body {
     margin: 0;
-    padding: 0.5px;
+    padding: 2rem;
     border: 0;
     box-sizing: border-box;
-    background-color: darkgrey;
+    background-color: #f5f6f8;
 }
 
 * {
-    font-family: 'Lobster', sans-serif;
-    font-family: 'Poppins', sans-serif;
     font-family: 'Roboto', sans-serif;
+    font-family: 'Poppins', sans-serif;
+    font-family: 'Lobster', sans-serif;
 }
