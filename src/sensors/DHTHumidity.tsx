@@ -1,6 +1,6 @@
 import React from "react";
 import { COLORS } from "../globals/colors";
-import CustomLineChart from "../charts/LineChart";
+import CustomLineChart from "../charts/CustomLineChart";
 
 const DHTHumidity = () => (
 	<CustomLineChart

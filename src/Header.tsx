@@ -15,6 +15,18 @@ function decodePathName(pathName: string) {
 			return "Sensor: DHT-22 - Temperature";
 		case ROUTES.DHT_humidity:
 			return "Sensor: DHT-22 - Humidity";
+		case ROUTES.BH_luminosity:
+			return "Sensor: BH1750 - Luminosity";
+		case ROUTES.BMP_pressure:
+			return "Sensor: BMP180 - Pressure";
+		case ROUTES.DS_heater_temperature:
+			return "Sensor: DS18B20 - Heater temperature";
+		case ROUTES.DS_temperature:
+			return "Sensor: DS18B20 - Temperature";
+		case ROUTES.PIR_movement:
+			return "Sensor: PIR - Movement";
+		case ROUTES.BMP_temperature:
+			return "Sensor: BMP180 - Temperature";
 		default:
 			return "Unknown";
 	}

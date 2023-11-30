@@ -60,11 +60,11 @@ def get_dht_humidity():
     )
     data = resp.json()
 
-    dht_temp = []
+    dht_humidity = []
 
     for entry in data["feeds"]:
         if entry["field2"] is not None:
-            dht_temp.append(
+            dht_humidity.append(
                 {
                     "timestamp": str(entry["created_at"]),
                     "value": float(entry["field2"]),
@@ -72,4 +72,136 @@ def get_dht_humidity():
                 }
             )
 
-    return jsonify(dht_temp), 200
+    return jsonify(dht_humidity), 200
+
+
+@app.route("/sensor/bh/luminosity")
+def get_bh_luminosity():
+    resp = requests.get(
+        f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/3.json"
+    )
+    data = resp.json()
+
+    luminosity = []
+
+    for entry in data["feeds"]:
+        if entry["field3"] is not None:
+            luminosity.append(
+                {
+                    "timestamp": str(entry["created_at"]),
+                    "value": float(entry["field3"]),
+                    "id": entry["entry_id"],
+                }
+            )
+
+    return jsonify(luminosity), 200
+
+
+@app.route("/sensor/bmp/pressure")
+def get_bmp_pressure():
+    resp = requests.get(
+        f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/4.json"
+    )
+    data = resp.json()
+
+    pressure = []
+
+    for entry in data["feeds"]:
+        if entry["field4"] is not None:
+            pressure.append(
+                {
+                    "timestamp": str(entry["created_at"]),
+                    "value": float(entry["field4"]),
+                    "id": entry["entry_id"],
+                }
+            )
+
+    return jsonify(pressure), 200
+
+
+@app.route("/sensor/ds/heater-temp")
+def get_ds_heater_temp():
+    resp = requests.get(
+        f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/5.json"
+    )
+    data = resp.json()
+
+    ds_heater_temp = []
+
+    for entry in data["feeds"]:
+        if entry["field5"] is not None:
+            ds_heater_temp.append(
+                {
+                    "timestamp": str(entry["created_at"]),
+                    "value": float(entry["field5"]),
+                    "id": entry["entry_id"],
+                }
+            )
+
+    return jsonify(ds_heater_temp), 200
+
+
+@app.route("/sensor/ds/temp")
+def get_ds_temp():
+    resp = requests.get(
+        f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/6.json"
+    )
+    data = resp.json()
+
+    ds_temp = []
+
+    for entry in data["feeds"]:
+        if entry["field6"] is not None:
+            ds_temp.append(
+                {
+                    "timestamp": str(entry["created_at"]),
+                    "value": float(entry["field6"]),
+                    "id": entry["entry_id"],
+                }
+            )
+
+    return jsonify(ds_temp), 200
+
+
+@app.route("/sensor/pir/movement")
+def get_pir_movement():
+    resp = requests.get(
+        f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/7.json"
+    )
+    data = resp.json()
+
+    pir_movement = []
+
+    for entry in data["feeds"]:
+        if entry["field7"] is not None:
+            pir_movement.append(
+                {
+                    "timestamp": str(entry["created_at"]),
+                    "value": float(entry["field7"]),
+                    "id": entry["entry_id"],
+                }
+            )
+
+    return jsonify(pir_movement), 200
+
+
+@app.route("/sensor/bmp/temp")
+def get_bmp_temp():
+    resp = requests.get(
+        f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/8.json"
+    )
+    data = resp.json()
+
+    bmp_temp = []
+
+    for entry in data["feeds"]:
+        if entry["field8"] is not None:
+            bmp_temp.append(
+                {
+                    "timestamp": str(entry["created_at"]),
+                    "value": float(entry["field8"]),
+                    "id": entry["entry_id"],
+                }
+            )
+
+    return jsonify(bmp_temp), 200

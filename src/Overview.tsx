@@ -89,7 +89,7 @@ export default function Overview() {
 							value={fields?.field3?.value}
 							icon="solar:flashlight-on-bold-duotone"
 							unit="lx"
-							goTo={ROUTES.exampleSensor}
+							goTo={ROUTES.BH_luminosity}
 							iconColor={COLORS_CSS.orange}
 						/>
 					</div>
@@ -100,7 +100,7 @@ export default function Overview() {
 							value={fields?.field4?.value}
 							icon="solar:wind-bold-duotone"
 							unit="hPa"
-							goTo={ROUTES.exampleSensor}
+							goTo={ROUTES.BMP_pressure}
 							iconColor={COLORS_CSS.blue}
 						/>
 						{/* Temp. grzejnika (DS18B20) [°C] */}
@@ -109,7 +109,7 @@ export default function Overview() {
 							value={fields?.field5?.value}
 							icon="solar:temperature-bold-duotone"
 							unit="°C"
-							goTo={ROUTES.exampleSensor}
+							goTo={ROUTES.DS_heater_temperature}
 						/>
 						{/* Temperatura (DS18B20) [°C] */}
 						<Card
@@ -117,7 +117,7 @@ export default function Overview() {
 							value={fields?.field6?.value}
 							icon="solar:temperature-bold-duotone"
 							unit="°C"
-							goTo={ROUTES.exampleSensor}
+							goTo={ROUTES.DS_temperature}
 						/>
 					</div>
 					<div className="row justify-content-evenly mb-4">
@@ -127,7 +127,7 @@ export default function Overview() {
 							value={fields?.field7?.value}
 							icon="solar:people-nearby-bold-duotone"
 							unit=""
-							goTo={ROUTES.exampleSensor}
+							goTo={ROUTES.PIR_movement}
 							iconColor={COLORS_CSS.green}
 						/>
 						{/* Temperatura (BMP-180) [°C] */}
@@ -136,7 +136,7 @@ export default function Overview() {
 							value={fields?.field8?.value}
 							icon="solar:temperature-bold-duotone"
 							unit="°C"
-							goTo={ROUTES.exampleSensor}
+							goTo={ROUTES.BMP_temperature}
 						/>
 					</div>
 				</>

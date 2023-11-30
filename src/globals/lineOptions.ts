@@ -8,7 +8,7 @@
  * @param color color of the line
  * @returns options for the line chart
  */
-export const getOptions = (title: string, xlabel: string, ylabel: string, ymin?: number, ymax?: number, color?: string) => {
+export const getOptions = (title: string, xlabel: string, ylabel: string, ymin?: number, ymax?: number) => {
 	return {
 		responsive: true,
 		plugins: {

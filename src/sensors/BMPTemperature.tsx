@@ -2,10 +2,10 @@ import React from "react";
 import { COLORS } from "../globals/colors";
 import CustomLineChart from "../charts/CustomLineChart";
 
-const DHTTemp = () => (
+const BMPTemp = () => (
 	<CustomLineChart
-		path="/api/sensor/dht/temp"
-		title="Temperature registered by DHT-22 sensor over time"
+		path="/api/sensor/bmp/temp"
+		title="Temperature registered by BMP-180 sensor over time"
 		legend="Temperature"
 		xLabel="Temperature [°C]"
 		yLabel="Time"
@@ -13,4 +13,4 @@ const DHTTemp = () => (
 	/>
 );
 
-export default DHTTemp;
+export default BMPTemp;
