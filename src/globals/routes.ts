@@ -1,3 +1,6 @@
+/**
+ * Routes for the frontend as an object to reduce misspellings
+ */
 export const ROUTES = {
 	exampleSensor: "/example-sensor",
 	DHT_temperature: "/dht/temp",

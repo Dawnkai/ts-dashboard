@@ -20,6 +20,16 @@ type LineProps = {
 	color: string;
 };
 
+/**
+ * Component for displaying a line chart
+ * @param {string} path Path to fetch data from API
+ * @param {string} title Title of the chart
+ * @param {string} legend Legend of the chart
+ * @param {string} yLabel Label of the y-axis
+ * @param {string} xLabel Label of the x-axis
+ * @param {string} color Color of the line
+ * @returns
+ */
 const CustomLineChart = ({ path, title, legend, yLabel, xLabel, color }: LineProps) => {
 	const [entries, setEntries] = useState<Entry[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
