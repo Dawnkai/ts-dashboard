@@ -1,136 +1,146 @@
-import React, { useEffect, useState } from 'react';
-import air_pressure_icon from '../assets/air_pressure_icon.png';
-import humidity_icon from '../assets/humidity_icon.png';
-import luminosity_icon from '../assets/luminosity_icon.png';
-import movement_icon from '../assets/movement_icon.png';
-import temperature_icon from '../assets/temperature_icon.png';
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Icon } from "@iconify/react";
 
 import "../styles/Overview.css";
+import { ROUTES } from "./globals/routes";
+import { COLORS_CSS } from "./globals/colors";
 
 interface Fields {
-    [key: string]: {
-        title: string;
-        value: string;
-    };
+	[key: string]: {
+		title: string;
+		value: string;
+	};
+}
+
+interface CardProps {
+	title: string;
+	value: string;
+	icon: string;
+	iconColor?: string;
+	unit: string;
+	goTo: string;
+}
+
+const Card = ({ title, value, icon, unit, iconColor, goTo }: CardProps) => {
+	const navigate = useNavigate();
+
+	return (
+		<div className="col-3 card card-container justify-content-center" onClick={() => navigate(goTo)}>
+			<span className="card-title">{title}</span>
+			<div className="card-text card-content align-items-center justify-content-center">
+				<Icon icon={icon} className="card-icon" width={48} height={48} style={{ color: iconColor }} />
+				<span className="card-value">
+					<span className="sensor-value">{value}</span>
+					<span>{unit}</span>
+				</span>
+			</div>
+		</div>
+	);
 };
 
 export default function Overview() {
-    const [fields, setFields] = useState<Fields>({});
-    const [loading, setLoading] = useState<boolean>(true);
-    const navigate = useNavigate();
+	const [fields, setFields] = useState<Fields>({});
+	const [loading, setLoading] = useState<boolean>(true);
 
-    useEffect(() => {
-        async function fetchData() {
-            const response = await fetch("/api/overview");
-            return response.json();
-        }
-        setLoading(true);
-        fetchData().then(resp => {
-            setFields(resp);
-            setLoading(false);
-        });
-    }, []);
+	useEffect(() => {
+		async function fetchData() {
+			const response = await fetch("/api/overview");
+			return response.json();
+		}
+		setLoading(true);
+		fetchData().then((resp) => {
+			setFields(resp);
+			setLoading(false);
+		});
+	}, []);
 
-    return (
-        <div className="container mb-4">
-            {
-                loading ?
-                <div className="d-flex justify-content-center">
-                    <div className="spinner-border" role="status">
-                        <span className="sr-only">Loading...</span>
-                    </div>
-                </div>
-                :
-                <>
-                    <div className="row justify-content-evenly mb-4">
-                        <div className="col-3 card card-container justify-content-center" onClick={() => navigate("/example-sensor")}>
-                            {/* Temperatura (DHT-22) */}
-                            <span className="card-title">{fields?.["field1"]?.["title"]}</span>
-                            <div className="card-text card-content align-items-center justify-content-center">
-                                <img src={temperature_icon} alt="temperature" className="card-icon"></img>
-                                <span className="card-value">
-                                    <span className="sensor-value">{fields?.["field1"]?.["value"]}</span> °C
-                                </span>
-                            </div>
-                        </div>
-                        <div className="col-3 card card-container justify-content-center" onClick={() => navigate("/example-sensor")}>
-                            {/* Wilgotność względna (DHT-22) */}
-                            <span className="card-title">{fields?.["field2"]?.["title"]}</span>
-                            <div className="card-text card-content align-items-center justify-content-center">
-                                <img src={humidity_icon} alt="humidity" className="card-icon"></img>
-                                <span className="card-value">
-                                    <span className="sensor-value">{fields?.["field2"]?.["value"]}</span> %
-                                </span>
-                            </div>
-                        </div>
-                        <div className="col-3 card card-container justify-content-center" onClick={() => navigate("/example-sensor")}>
-                            {/* Natężenie światła (BH-1750) */}
-                            <span className="card-title">{fields?.["field3"]?.["title"]}</span>
-                            <div className="card-text card-content align-items-center justify-content-center">
-                                <img src={luminosity_icon} alt="luminosity" className="card-icon"></img>
-                                <span className="card-value">
-                                    <span className="sensor-value">{fields?.["field3"]?.["value"]}</span> lx
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="row justify-content-evenly mb-4">
-                        <div className="col-3 card card-container justify-content-center" onClick={() => navigate("/example-sensor")}>
-                            {/* Ciśnienie atm. (BMP-180) [hPa] */}
-                            <span className="card-title">{fields?.["field4"]?.["title"]}</span>
-                            <div className="card-text card-content align-items-center justify-content-center">
-                                <img src={air_pressure_icon} alt="pressure" className="card-icon"></img>
-                                <span className="card-value">
-                                    <span className="sensor-value">{fields?.["field4"]?.["value"]}</span> hPa
-                                </span>
-                            </div>
-                        </div>
-                        <div className="col-3 card card-container justify-content-center" onClick={() => navigate("/example-sensor")}>
-                            {/* Temp. grzejnika (DS18B20) [°C] */}
-                            <span className="card-title">{fields?.["field5"]?.["title"]}</span>
-                            <div className="card-text card-content align-items-center justify-content-center">
-                                <img src={temperature_icon} alt="temperature" className="card-icon"></img>
-                                <span className="card-value">
-                                    <span className="sensor-value">{fields?.["field5"]?.["value"]}</span> °C
-                                </span>
-                            </div>
-                        </div>
-                        <div className="col-3 card card-container justify-content-center" onClick={() => navigate("/example-sensor")}>
-                            {/* Temperatura (DS18B20) [°C] */}
-                            <span className="card-title">{fields?.["field6"]?.["title"]}</span>
-                            <div className="card-text card-content align-items-center justify-content-center">
-                                <img src={temperature_icon} alt="temperature" className="card-icon"></img>
-                                <span className="card-value">
-                                    <span className="sensor-value">{fields?.["field6"]?.["value"]}</span> °C
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="row justify-content-evenly">
-                        <div className="col-3 card card-container justify-content-center" onClick={() => navigate("/example-sensor")}>
-                            {/* Ruch (PIR) */}
-                            <span className="card-title">{fields?.["field7"]?.["title"]}</span>
-                            <div className="card-text card-content align-items-center justify-content-center">
-                                <img src={movement_icon} alt="movement" className="card-icon"></img>
-                                <span className="card-value">
-                                    <span className="sensor-value">{fields?.["field7"]?.["value"]}</span> PIR
-                                </span>
-                            </div>
-                        </div>
-                        <div className="col-3 card card-container justify-content-center" onClick={() => navigate("/example-sensor")}>
-                            {/* Temperatura (BMP-180) [°C] */}
-                            <span className="card-title">{fields?.["field8"]?.["title"]}</span>
-                            <div className="card-text card-content align-items-center justify-content-center">
-                                <img src={temperature_icon} alt="temperature" className="card-icon"></img>
-                                <span className="card-value">
-                                    <span className="sensor-value">{fields?.["field8"]?.["value"]}</span> °C
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </>
-            }
-        </div>
-    );
+	return (
+		<div className="container mb-4">
+			{loading ? (
+				<div className="d-flex justify-content-center">
+					<div className="spinner-border" role="status">
+						<span className="sr-only">Loading...</span>
+					</div>
+				</div>
+			) : (
+				<>
+					<div className="row justify-content-evenly mb-4">
+						{/* Temperatura (DHT-22) */}
+						<Card
+							title={fields?.field1?.title}
+							value={fields?.field1?.value}
+							icon="solar:temperature-bold-duotone"
+							unit="°C"
+							goTo={ROUTES.DHT_temperature}
+						/>
+						{/* Wilgotność względna (DHT-22) */}
+						<Card
+							title={fields?.field2?.title}
+							value={fields?.field2?.value}
+							icon="solar:waterdrops-bold-duotone"
+							unit="%"
+							goTo={ROUTES.DHT_humidity}
+							iconColor={COLORS_CSS.blue}
+						/>
+						{/* Natężenie światła (BH-1750) */}
+						<Card
+							title={fields?.field3?.title}
+							value={fields?.field3?.value}
+							icon="solar:flashlight-on-bold-duotone"
+							unit="lx"
+							goTo={ROUTES.BH_luminosity}
+							iconColor={COLORS_CSS.orange}
+						/>
+					</div>
+					<div className="row justify-content-evenly mb-4">
+						{/* Ciśnienie atm. (BMP-180) [hPa] */}
+						<Card
+							title={fields?.field4?.title}
+							value={fields?.field4?.value}
+							icon="solar:wind-bold-duotone"
+							unit="hPa"
+							goTo={ROUTES.BMP_pressure}
+							iconColor={COLORS_CSS.blue}
+						/>
+						{/* Temp. grzejnika (DS18B20) [°C] */}
+						<Card
+							title={fields?.field5?.title}
+							value={fields?.field5?.value}
+							icon="solar:temperature-bold-duotone"
+							unit="°C"
+							goTo={ROUTES.DS_heater_temperature}
+						/>
+						{/* Temperatura (DS18B20) [°C] */}
+						<Card
+							title={fields?.field6?.title}
+							value={fields?.field6?.value}
+							icon="solar:temperature-bold-duotone"
+							unit="°C"
+							goTo={ROUTES.DS_temperature}
+						/>
+					</div>
+					<div className="row justify-content-evenly mb-4">
+						{/* Ruch (PIR) */}
+						<Card
+							title={fields?.field7?.title}
+							value={fields?.field7?.value}
+							icon="solar:people-nearby-bold-duotone"
+							unit=""
+							goTo={ROUTES.PIR_movement}
+							iconColor={COLORS_CSS.green}
+						/>
+						{/* Temperatura (BMP-180) [°C] */}
+						<Card
+							title={fields?.field8?.title}
+							value={fields?.field8?.value}
+							icon="solar:temperature-bold-duotone"
+							unit="°C"
+							goTo={ROUTES.BMP_temperature}
+						/>
+					</div>
+				</>
+			)}
+		</div>
+	);
 }

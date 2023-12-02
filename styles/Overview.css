@@ -1,24 +1,24 @@
 .card-icon {
     max-width: 50px;
+    color: var(--primary);
 }
 
 .card-container {
     padding: 1.25rem;
-    border-width: 7px;
+    border: 1px solid transparent;
     height: 200px;
     width: 400px;
-
-    background-clip: padding-box;
-    border: solid 5px transparent;
-    border-radius: 10px
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all 0.2s ease-in-out;
 }
 
 .card-container:hover {
-    cursor: pointer;
-    box-shadow: 10px 5px 5px black;
+    border: 1px solid var(--primary);
+    background-color: var(--primary-accent);
 }
 
-/* Hack for gradient border, more on it here: https://css-tricks.com/gradient-borders-in-css/ */
+/* Hack for gradient border, more on it here: https://css-tricks.com/gradient-borders-in-css/
 .card-container::before {
     content: '';
     position: absolute;
@@ -29,8 +29,8 @@
     z-index: -1;
     margin: -7px;
     border-radius: inherit;
-    background: linear-gradient(45deg, rgba(102,76,150,1) 0%, rgba(253,29,29,1) 50%, rgba(247,230,29,1) 100%);
-}
+    background: linear-gradient(45deg, rgba(102, 76, 150, 1) 0%, rgba(253, 29, 29, 1) 50%, rgba(247, 230, 29, 1) 100%);
+} */
 
 .card-value {
     font-size: 2rem;
