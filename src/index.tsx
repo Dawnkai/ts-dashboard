@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import Overview from "./Overview";
 import Header from "./Header";
+import LoginPage from "./LoginPage";
 import ExampleSensor from "./sensors/ExampleSensor";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ROUTES } from "./globals/routes";
@@ -22,6 +23,7 @@ const App = () => {
 				<Header />
 				<Routes>
 					<Route path="/" element={<Overview />} />
+					<Route path="/login" element={<LoginPage />} />
 					<Route path={ROUTES.exampleSensor} element={<ExampleSensor />} />
 					<Route path={ROUTES.DHT_temperature} element={<DHTTemp />} />
 					<Route path={ROUTES.DHT_humidity} element={<DHTHumidity />} />

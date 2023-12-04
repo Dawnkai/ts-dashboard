@@ -1,0 +1,22 @@
+.login-btn {
+    border: none;
+    background-color: transparent;
+}
+
+.login-btn:hover {
+    background-color: transparent;
+    /* Bootstrap's default color for primary, but 15% darker */
+    color: #024dbc;
+}
+
+.login-icon {
+    /* Default fontawesome user icon is too small, make it bigger */
+    font-size: 2rem !important;
+    color: var(--primary);
+}
+
+.dropdown {
+    /* Bootstrap says we have to specify the width of login modal with form manually */
+    min-width: 300px;
+    text-align: right;
+}

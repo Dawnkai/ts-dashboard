@@ -3,12 +3,15 @@ import { useLocation } from "react-router-dom";
 
 import "../styles/Header.css";
 import { ROUTES } from "./globals/routes";
+import LoginDropdown from "./LoginDropdown";
 
 function decodePathName(pathName: string) {
 	// This can be replaced by passing props with page name to Route in react-dom
 	switch (pathName) {
 		case "/":
 			return "Overview";
+		case "/login":
+			return "Login"
 		case ROUTES.exampleSensor:
 			return "Sensor: Example";
 		case ROUTES.DHT_temperature:
@@ -42,9 +45,7 @@ export default function Header() {
 				<h3 className="page-title">{decodePathName(location.pathname)}</h3>
 			</div>
 			<div className="nav-menu d-flex align-items-baseline">
-				<button className="btn btn-outline-primary nav-menu-btn">
-					<i className="fa fa-user-circle-o login-icon" aria-hidden="true"></i>
-				</button>
+				<LoginDropdown/>
 			</div>
 		</div>
 	);
