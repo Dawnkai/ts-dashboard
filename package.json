@@ -8,7 +8,8 @@
     "start": "parcel index.html",
     "build": "parcel build index.html",
     "server:start": "flask --app server/main run",
-    "server:debug": "flask --app server/main run --debug"
+    "server:debug": "flask --app server/main run --debug",
+    "server:db": "python server/create_db.py server/database.db"
   },
   "repository": {
     "type": "git",
