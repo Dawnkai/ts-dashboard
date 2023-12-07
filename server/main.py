@@ -2,7 +2,7 @@ from flask import Flask, jsonify, g, request
 import requests
 import sqlite3
 
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
+from flask_jwt_extended import create_access_token, jwt_required, JWTManager
 
 from utils import authenticate_user, convert_sensor_data, user_exists
 
@@ -10,6 +10,8 @@ app = Flask(__name__)
 app.config["API"] = "https://api.thingspeak.com"
 app.config["CHANNEL"] = 202842
 app.config["DBPATH"] = "server/database.db"
+# Change this key when deploying to production
+app.config['SECRET_KEY'] = "asdasdasd"
 jwt = JWTManager(app)
 
 def get_db():
@@ -27,35 +29,46 @@ def close_connection(exception):
         db.close()
 
 
-@app.route("/login", methods=["GET", "POST"])
-def login():
+# Register needs to have separate API, because in GET requests using fetch does not support body
+# There is actually a pretty funny thread about this, I recommend checking it out
+# https://github.com/whatwg/fetch/issues/551
+@app.route("/register", methods=["POST"])
+def register():
     if not request.is_json:
-        return jsonify({"msg": "Request is not a json"}), 401
+        return jsonify({"msg": "Request is not a json"}), 400
     db = get_db()
     user_data = request.get_json()
 
     if "user_login" not in user_data or "user_password" not in user_data:
-        return jsonify({"msg": "Request json has missing fields!"}), 401
+        return jsonify({"msg": "Request json has missing fields!"}), 400
+    
+    if user_exists(db.cursor(), user_data["user_login"]):
+        return jsonify({"msg": "User already exists!"}), 400
+    db.cursor().execute(
+        f"INSERT INTO USER (user_login, user_password) VALUES (?, ?)",
+        [user_data["user_login"], user_data["user_password"]]
+    )
+    db.commit()
+    return jsonify(
+        {"msg": "User created!", "token": create_access_token(identity=user_data["user_login"])}
+    ), 201
 
-    # POST
-    if request.method == "POST":
-        if user_exists(db.cursor(), user_data["user_login"]):
-            return jsonify({"msg": "User already exists!"}), 401
-        db.cursor().execute(
-            f"INSERT INTO USER (user_login, user_password) VALUES (?, ?)",
-            [user_data["user_login"], user_data["user_password"]]
-        )
-        db.commit()
-        return jsonify(
-            {"msg": "User created!", "token": create_access_token(identity=user_data["user_login"])}
-        ), 201
 
-    # GET
+@app.route("/login", methods=["POST"])
+def login():
+    if not request.is_json:
+        return jsonify({"msg": "Request is not a json"}), 400
+    db = get_db()
+    user_data = request.get_json()
+
+    if "user_login" not in user_data or "user_password" not in user_data:
+        return jsonify({"msg": "Request json has missing fields!"}), 400
+
     if authenticate_user(db.cursor(), user_data["user_login"], user_data["user_password"]):
         return jsonify(
             {"msg": "User logged in!", "token": create_access_token(identity=user_data["user_login"])}
         ), 200
-    return jsonify({"msg": "Wrong login or password."}), 403
+    return jsonify({"msg": "Wrong login or password."}), 401
 
 
 @app.route("/overview")

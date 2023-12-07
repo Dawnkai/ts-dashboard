@@ -1,9 +1,9 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import "../styles/Header.css";
 import { ROUTES } from "./globals/routes";
-import LoginDropdown from "./LoginDropdown";
+import { isLoggedIn } from "./globals/utils";
 
 function decodePathName(pathName: string) {
 	// This can be replaced by passing props with page name to Route in react-dom
@@ -37,6 +37,7 @@ function decodePathName(pathName: string) {
 
 export default function Header() {
 	const location = useLocation();
+	const navigate = useNavigate();
 
 	return (
 		<div className="d-flex w-100 justify-content-between mt-4 mb-4">
@@ -45,7 +46,17 @@ export default function Header() {
 				<h3 className="page-title">{decodePathName(location.pathname)}</h3>
 			</div>
 			<div className="nav-menu d-flex align-items-baseline">
-				<LoginDropdown/>
+				<button
+					className="btn btn-outline-primary login-btn"
+					type="button"
+					aria-expanded="false"
+					onClick={() => navigate("/login")}
+				>
+					<i
+						className={`fa fa-user-circle-o login-icon ${(isLoggedIn() ? "login-icon-user" : "login-icon-guest")}`}
+						aria-hidden="true"
+					></i>
+				</button>
 			</div>
 		</div>
 	);

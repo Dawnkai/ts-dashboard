@@ -5,6 +5,7 @@ import { Icon } from "@iconify/react";
 import "../styles/Overview.css";
 import { ROUTES } from "./globals/routes";
 import { COLORS_CSS } from "./globals/colors";
+import { isLoggedIn } from "./globals/utils";
 
 interface Fields {
 	[key: string]: {
@@ -26,7 +27,15 @@ const Card = ({ title, value, icon, unit, iconColor, goTo }: CardProps) => {
 	const navigate = useNavigate();
 
 	return (
-		<div className="col-3 card card-container justify-content-center" onClick={() => navigate(goTo)}>
+		<div
+			className={`col-3 card card-container justify-content-center ${isLoggedIn() ? '' : 'card-container-disabled'}`}
+			onClick={(event) => {
+				// Without preventDefault, if user isn't logged in, onClick will refresh the page
+				event.preventDefault();
+				event.stopPropagation();
+				if (isLoggedIn()) navigate(goTo);
+			}}
+		>
 			<span className="card-title">{title}</span>
 			<div className="card-text card-content align-items-center justify-content-center">
 				<Icon icon={icon} className="card-icon" width={48} height={48} style={{ color: iconColor }} />
@@ -46,12 +55,16 @@ export default function Overview() {
 	useEffect(() => {
 		async function fetchData() {
 			const response = await fetch("/api/overview");
-			return response.json();
+			return response;
 		}
 		setLoading(true);
-		fetchData().then((resp) => {
-			setFields(resp);
-			setLoading(false);
+		fetchData().then((response) => {
+			if (response.status === 200) {
+				response.json().then((resp) => {
+					setFields(resp);
+					setLoading(false);
+				});
+			}
 		});
 	}, []);
 

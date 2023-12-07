@@ -1,44 +1,19 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { sendLoginRequest } from "./globals/utils";
+import { LoginRequest, LoginResponse } from "./globals/interfaces";
 
 import "../styles/LoginPage.css";
 
-interface LoginProps {
-    user_login: string,
-    user_password: string
-};
-
 export default function LoginPage() {
+    const navigate = useNavigate();
 
     const [isLogin, setIsLogin] = useState<boolean>(true);
-    const [formData, setFromData] = useState<LoginProps>({
+    const [formData, setFromData] = useState<LoginRequest>({
         "user_login": "",
         "user_password": ""
     });
-
-    async function sendRequest() {
-        if (isLogin) {
-            const response = await fetch(
-                "api/login", {
-                    method: "GET",
-                    body: JSON.stringify(formData),
-                    headers: {
-                        "Content-type": "application/json; charset=UTF-8"
-                    }
-                }
-            );
-            return response.json();
-        }
-        const response = await fetch(
-            "/api/login", {
-                method: "POST",
-                body: JSON.stringify(formData),
-                headers: {
-                    "Content-type": "application/json; charset=UTF-8"
-                }
-            }
-        );
-        return response.json();
-    }
+    const [error, setError] = useState<string>("");
 
     const handleChangeMode = (event : any) => {
         event.preventDefault();
@@ -49,8 +24,24 @@ export default function LoginPage() {
     const handleSubmit = (event : any) => {
         event.preventDefault();
         event.stopPropagation();
-        sendRequest().then(
-            (resp) => console.log(resp)
+        sendLoginRequest(isLogin, formData).then(
+            (response) => {
+                response.json().then(
+                    (body : LoginResponse) => {
+                        if (response.status === 200 || response.status === 201) {
+                            localStorage.setItem("token", body.token);
+                            navigate("/");
+                        }
+                        else {
+                            setError(body.msg);
+                        }
+                    }
+                )
+            }
+        ).catch(
+            (reason) => {
+                console.log(reason);
+            }
         )
     }
 
@@ -99,6 +90,9 @@ export default function LoginPage() {
                             Your password must be 8-20 characters long, contain letters and numbers, and must not contain spaces, special characters, or emoji.
                         </div>}
                     </div>
+                    { error.length > 0 && <div className="mb-3 mt-3 alert alert-danger" role="alert">
+                        {error}
+                    </div> }
                     <button
                         type="submit"
                         className="btn btn-primary w-100"
