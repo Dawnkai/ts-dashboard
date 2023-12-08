@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from "chart.js";
 import { Line } from "react-chartjs-2";
 import { getOptions } from "../globals/lineOptions";
-import { logOut } from "../globals/utils";
-import { useNavigate } from "react-router-dom";
 
 interface Entry {
 	timestamp: string;
@@ -35,36 +33,20 @@ type LineProps = {
 const CustomLineChart = ({ path, title, legend, yLabel, xLabel, color }: LineProps) => {
 	const [entries, setEntries] = useState<Entry[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
-	const navigate = useNavigate();
 
 	const PATH: string = path;
 
 	useEffect(() => {
 		async function fetchData() {
-			const response = await fetch(
-				PATH,
-				// Add http-only JWT token to request
-				{ credentials: 'include' }
-			);
-			return response;
+			const response = await fetch(PATH);
+			return response.json();
 		}
 		setLoading(true);
-		fetchData().then(
-			(response) => {
-				if (response.status !== 200) {
-					if (response.status !== 500) {
-						logOut().then(() => navigate("/"));
-					};
-					navigate("/");
-				}
-				response.json().then(
-					resp => {
-						setEntries(resp);
-						setLoading(false);
-					}
-				)
-			}
-		);
+		fetchData().then((resp) => {
+			console.log(resp);
+			setEntries(resp);
+			setLoading(false);
+		});
 	}, []);
 
 	const min = entries.length > 0 ? Math.min(...entries.map((entry) => entry.value)) - 0.05 : 0;
