@@ -1,8 +1,8 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
 
-import "../styles/Header.css";
-import { ROUTES } from "./globals/routes";
+import "../../styles/Header.css";
+import { ROUTES } from "../globals/routes";
 
 function decodePathName(pathName: string) {
 	// This can be replaced by passing props with page name to Route in react-dom

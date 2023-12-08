@@ -1,19 +1,19 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import Overview from "./Overview";
-import Header from "./Header";
-import ExampleSensor from "./sensors/ExampleSensor";
+import Header from "./components/Header";
+import ExampleSensor from "./components/sensors/ExampleSensor";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ROUTES } from "./globals/routes";
 
-import DHTTemp from "./sensors/DHTTemp";
-import DHTHumidity from "./sensors/DHTHumidity";
-import BHLuminosity from "./sensors/BHLuminosity";
-import BMPPressure from "./sensors/BMPPressure";
-import BMPTemp from "./sensors/BMPTemperature";
-import DSHeaterTemp from "./sensors/DSHeaterTemperature";
-import DSTemp from "./sensors/DSTemp";
-import PIRMovement from "./sensors/PIRMovement";
+import DHTTemp from "./components/sensors/DHTTemp";
+import DHTHumidity from "./components/sensors/DHTHumidity";
+import BHLuminosity from "./components/sensors/BHLuminosity";
+import BMPPressure from "./components/sensors/BMPPressure";
+import BMPTemp from "./components/sensors/BMPTemperature";
+import DSHeaterTemp from "./components/sensors/DSHeaterTemperature";
+import DSTemp from "./components/sensors/DSTemp";
+import PIRMovement from "./components/sensors/PIRMovement";
 
 const App = () => {
 	return (
