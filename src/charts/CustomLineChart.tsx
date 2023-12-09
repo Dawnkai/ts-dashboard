@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from "chart.js";
 import { Line } from "react-chartjs-2";
 import { getOptions } from "../globals/lineOptions";
-import { getJWTToken, logOut } from "../globals/utils";
+import { logOut } from "../globals/utils";
 import { useNavigate } from "react-router-dom";
 
 interface Entry {
@@ -40,17 +40,11 @@ const CustomLineChart = ({ path, title, legend, yLabel, xLabel, color }: LinePro
 	const PATH: string = path;
 
 	useEffect(() => {
-		const token = getJWTToken();
-		if (!token) navigate("/");
-		
 		async function fetchData() {
 			const response = await fetch(
 				PATH,
-				{
-					headers: {
-						"Authorization": "Bearer " + token
-					}
-				}
+				// Add http-only JWT token to request
+				{ credentials: 'include' }
 			);
 			return response;
 		}
@@ -58,7 +52,9 @@ const CustomLineChart = ({ path, title, legend, yLabel, xLabel, color }: LinePro
 		fetchData().then(
 			(response) => {
 				if (response.status !== 200) {
-					if (response.status !== 500) logOut();
+					if (response.status !== 500) {
+						logOut().then(() => navigate("/"));
+					};
 					navigate("/");
 				}
 				response.json().then(

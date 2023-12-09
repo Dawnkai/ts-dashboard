@@ -32,29 +32,21 @@ export async function sendLoginRequest(isLogin : boolean, formData : LoginReques
 }
 
 /**
- * When the user logs in, JWT token is saved to localStorage,
- * therefore if it's present - the user is logged in.
- * @returns True if token is present (user is logged in), false if not
+ * When the user logs in, JWT token is saved to HTTP-only cookies,
+ * which cannot be read on frontend using JS, instead loggedIn is set to "true" in local storage.
+ * @returns True if user is logged in, false if not
  */
 export function isLoggedIn() {
-    const token = localStorage.getItem("token");
-    return token ? true : false;
+    const loggedIn = localStorage.getItem("loggedIn");
+    return loggedIn === "true";
 }
 
 /**
- * When the user logs in, JWT token is saved to localStorage,
- * this function will extract it.
- * @returns JWT token present in localStorage
+ * When the user logs in, JWT token is saved to HTTP-only cookies,
+ * which cannot be read on frontend using JS, set "loggedIn" to false to log him out.
  */
-export function getJWTToken() {
-    return localStorage.getItem("token");
-}
-
-/**
- * When the user logs in, JWT token is saved to localStorage,
- * this function will remove it (which will effectively log him out, as login functions
- * depend on it).
- */
-export function logOut() {
-    localStorage.removeItem("token");
+export async function logOut() {
+    // This request will return a reponse which will force the browser to remove http-only token
+    await fetch("api/logout", { method: "HEAD" });
+    localStorage.removeItem("loggedIn");
 }

@@ -3,15 +3,3 @@
     font-size: 2rem !important;
     border: none;
 }
-
-.login-btn:hover {
-    background-color: transparent;
-}
-
-.login-icon-guest {
-    color: var(--primary);
-}
-
-.login-icon-user {
-    color: var(--green);
-}

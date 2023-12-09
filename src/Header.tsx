@@ -3,10 +3,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import "../styles/Header.css";
 import { ROUTES } from "./globals/routes";
-import { isLoggedIn } from "./globals/utils";
+import { isLoggedIn, logOut } from "./globals/utils";
+
 
 function decodePathName(pathName: string) {
 	// This can be replaced by passing props with page name to Route in react-dom
+	// Literally how? Header is outside of Routes so we don't have to put it into every component
+	// If you can do it without copy pasting Header into every component, go ahead
 	switch (pathName) {
 		case "/":
 			return "Overview";
@@ -46,17 +49,52 @@ export default function Header() {
 				<h3 className="page-title">{decodePathName(location.pathname)}</h3>
 			</div>
 			<div className="nav-menu d-flex align-items-baseline">
-				<button
+				{ !isLoggedIn() && <button
 					className="btn btn-outline-primary login-btn"
 					type="button"
 					aria-expanded="false"
 					onClick={() => navigate("/login")}
 				>
 					<i
-						className={`fa fa-user-circle-o login-icon ${(isLoggedIn() ? "login-icon-user" : "login-icon-guest")}`}
+						className="fa fa-user-circle-o"
 						aria-hidden="true"
 					></i>
-				</button>
+				</button> }
+				{ isLoggedIn() && <button
+					className="btn btn-outline-primary login-btn"
+					type="button"
+					aria-expanded="false"
+					data-bs-toggle="modal"
+					data-bs-target="#logoutModal"
+				>
+					<i
+						className="fa fa-sign-out"
+						aria-hidden="true"
+					></i>
+				</button> }
+			</div>
+			<div className="modal fade" id="logoutModal" tabIndex={-1} aria-labelledby="logoutModalLabel" aria-hidden="true">
+				<div className="modal-dialog">
+					<div className="modal-content">
+						<div className="modal-header">
+							<h5 className="modal-title" id="logoutModalLabel">Log out</h5>
+							<button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+						</div>
+						<div className="modal-body text-center">
+							Are you sure you want to log out?
+						</div>
+						<div className="modal-footer">
+							<button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+							<button
+								type="button"
+								className="btn btn-danger"
+								onClick={() => logOut().then(() => window.location.reload())}
+							>
+								Log out
+							</button>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	);

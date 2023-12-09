@@ -1,8 +1,11 @@
 from flask import Flask, jsonify, g, request
+from datetime import timedelta, datetime, timezone
+
 import requests
 import sqlite3
 
-from flask_jwt_extended import create_access_token, jwt_required, JWTManager
+from flask_jwt_extended import create_access_token, jwt_required, JWTManager, \
+    get_jwt, get_jwt_identity, set_access_cookies, unset_jwt_cookies
 
 from utils import authenticate_user, convert_sensor_data, user_exists
 
@@ -12,7 +15,12 @@ app.config["CHANNEL"] = 202842
 app.config["DBPATH"] = "server/database.db"
 # Change this key when deploying to production
 app.config['SECRET_KEY'] = "asdasdasd"
+# JWT tokens are going to be stored to cookies
+app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
+# How long should the jwt token be valid for
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 jwt = JWTManager(app)
+
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -27,6 +35,31 @@ def close_connection(exception):
     db = getattr(g, '_database', None)
     if db is not None:
         db.close()
+
+
+@app.after_request
+def refresh_expiring_jwts(response):
+    try:
+        expiry_time = get_jwt()["exp"]
+        now = datetime.now(timezone.utc)
+        target_time = datetime.timestamp(now + (app.config["JWT_ACCESS_TOKEN_EXPIRES"] / 2))
+        # If token expires in less than half it's max age, refresh token
+        if target_time > expiry_time:
+            access_token = create_access_token(identity=get_jwt_identity())
+            set_access_cookies(response, access_token)
+        return response
+    except (RuntimeError, KeyError):
+        # Case where there is not a valid JWT. Just return the original response
+        return response
+
+
+@app.route("/logout", methods=["HEAD"])
+@jwt_required()
+def logout():
+    # HEAD request ignores the body, so the content doesn't matter
+    response = jsonify({"msg": "Logged out."})
+    unset_jwt_cookies(response)
+    return response, 200
 
 
 # Register needs to have separate API, because in GET requests using fetch does not support body
@@ -49,9 +82,10 @@ def register():
         [user_data["user_login"], user_data["user_password"]]
     )
     db.commit()
-    return jsonify(
-        {"msg": "User created!", "token": create_access_token(identity=user_data["user_login"])}
-    ), 201
+    
+    response = jsonify({"msg": "User created!"})
+    set_access_cookies(response, create_access_token(identity=user_data["user_login"]))
+    return response, 201
 
 
 @app.route("/login", methods=["POST"])
@@ -65,9 +99,9 @@ def login():
         return jsonify({"msg": "Request json has missing fields!"}), 400
 
     if authenticate_user(db.cursor(), user_data["user_login"], user_data["user_password"]):
-        return jsonify(
-            {"msg": "User logged in!", "token": create_access_token(identity=user_data["user_login"])}
-        ), 200
+        response = jsonify({"msg": "User logged in!"})
+        set_access_cookies(response, create_access_token(identity=user_data["user_login"]))
+        return response, 200
     return jsonify({"msg": "Wrong login or password."}), 401
 
 

@@ -29,7 +29,8 @@ export default function LoginPage() {
                 response.json().then(
                     (body : LoginResponse) => {
                         if (response.status === 200 || response.status === 201) {
-                            localStorage.setItem("token", body.token);
+                            // Workaround since http-only JWT tokens cannot be read using JS
+                            localStorage.setItem("loggedIn", "true");
                             navigate("/");
                         }
                         else {
