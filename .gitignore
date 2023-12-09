@@ -3,3 +3,4 @@ dist
 .cache
 server/__pycache__
 .parcel-cache
+server/database.db

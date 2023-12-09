@@ -13,6 +13,15 @@
     transition: all 0.2s ease-in-out;
 }
 
+.card-container-disabled {
+    cursor: default !important;
+}
+
+.card-container-disabled:hover {
+    border: none !important;
+    background-color: white !important;
+}
+
 .card-container:hover {
     border: 1px solid var(--primary);
     background-color: var(--primary-accent);
