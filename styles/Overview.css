@@ -18,7 +18,7 @@
 }
 
 .card-container-disabled:hover {
-    border: none !important;
+    border: 1px solid transparent !important;
     background-color: white !important;
 }
 

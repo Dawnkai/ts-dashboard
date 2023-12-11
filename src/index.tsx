@@ -14,6 +14,8 @@ import BMPTemp from "./components/sensors/BMPTemperature";
 import DSHeaterTemp from "./components/sensors/DSHeaterTemperature";
 import DSTemp from "./components/sensors/DSTemp";
 import PIRMovement from "./components/sensors/PIRMovement";
+import ProtectedRoute from "./ProtectedRoute";
+import LoginPage from "./LoginPage";
 
 const App = () => {
 	return (
