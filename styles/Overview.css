@@ -18,7 +18,7 @@
 }
 
 .card-container-disabled:hover {
-    border: none !important;
+    border: 1px solid transparent !important;
     background-color: white !important;
 }
 
@@ -26,20 +26,6 @@
     border: 1px solid var(--primary);
     background-color: var(--primary-accent);
 }
-
-/* Hack for gradient border, more on it here: https://css-tricks.com/gradient-borders-in-css/
-.card-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: -1;
-    margin: -7px;
-    border-radius: inherit;
-    background: linear-gradient(45deg, rgba(102, 76, 150, 1) 0%, rgba(253, 29, 29, 1) 50%, rgba(247, 230, 29, 1) 100%);
-} */
 
 .card-value {
     font-size: 2rem;

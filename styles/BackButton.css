@@ -1,0 +1,26 @@
+.back-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    border: 1px solid transparent;
+    background-color: transparent;
+    border-radius: 10px;
+    transition: all 0.15s ease-in-out;
+    cursor: pointer;
+    outline: none;
+    font-family: 'Roboto', sans-serif;
+    color: var(--text)
+}
+
+.back-button:hover {
+    border: 1px solid var(--primary);
+    background-color: var(--primary-accent);
+    color: var(--primary);
+}

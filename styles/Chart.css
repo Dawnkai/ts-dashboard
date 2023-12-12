@@ -1,0 +1,9 @@
+button+button {
+    margin-left: 10px;
+}
+
+button>span {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+}
