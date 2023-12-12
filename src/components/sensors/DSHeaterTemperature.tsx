@@ -8,9 +8,8 @@ const DSHeaterTemp = () => (
 		<CustomLineChart
 			path="/api/sensor/ds/heater-temp"
 			title="Heater temperature registered by DS18B20 sensor over time"
-			legend="Heater temperature"
-			xLabel="Temperature [°C]"
-			yLabel="Time"
+			xLabel="Time"
+			yLabel="Temperature [°C]"
 			color={COLORS.red}
 		/>
 		<BackButton />

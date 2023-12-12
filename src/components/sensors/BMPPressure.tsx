@@ -8,9 +8,8 @@ const BMPPressure = () => (
 		<CustomLineChart
 			path="/api/sensor/bmp/pressure"
 			title="Pressure registered by BMP-180 sensor over time"
-			legend="Pressure"
-			xLabel="Pressure [hPa]"
-			yLabel="Time"
+			xLabel="Time"
+			yLabel="Pressure [hPa]"
 			color={COLORS.blue}
 		/>
 		<BackButton />

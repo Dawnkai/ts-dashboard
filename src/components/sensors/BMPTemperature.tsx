@@ -8,9 +8,8 @@ const BMPTemp = () => (
 		<CustomLineChart
 			path="/api/sensor/bmp/temp"
 			title="Temperature registered by BMP-180 sensor over time"
-			legend="Temperature"
-			xLabel="Temperature [°C]"
-			yLabel="Time"
+			xLabel="Time"
+			yLabel="Temperature [°C]"
 			color={COLORS.red}
 		/>
 		<BackButton />

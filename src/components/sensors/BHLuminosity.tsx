@@ -8,9 +8,8 @@ const BHLuminosity = () => (
 		<CustomLineChart
 			path="/api/sensor/bh/luminosity"
 			title="Luminosity registered by BH-1750 sensor over time"
-			legend="Luminosity"
-			xLabel="Luminosity [lx]"
-			yLabel="Time"
+			xLabel="Time"
+			yLabel="Luminosity [lx]"
 			color={COLORS.orange}
 		/>
 		<BackButton />

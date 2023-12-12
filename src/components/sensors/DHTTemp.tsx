@@ -8,9 +8,8 @@ const DHTTemp = () => (
 		<CustomLineChart
 			path="/api/sensor/dht/temp"
 			title="Temperature registered by DHT-22 sensor over time"
-			legend="Temperature"
-			xLabel="Temperature [°C]"
-			yLabel="Time"
+			xLabel="Time"
+			yLabel="Temperature [°C]"
 			color={COLORS.red}
 		/>
 		<BackButton />
