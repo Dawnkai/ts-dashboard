@@ -6,3 +6,5 @@ pandas==2.1.4
 # Pip 21.3+ is required for xgboost, otherwise build from source:
 # https://xgboost.readthedocs.io/en/stable/
 xgboost==2.0.2
+catboost==1.2.2
+prophet==1.1.5

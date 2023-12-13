@@ -12,10 +12,14 @@ $ pip install -r ai_requirements.txt
 Models:
 * `KNN.py` - time series wrapper for `scikit-learn`'s `KNeighborsRegressor`
 * `XGBoost.py` - time series wrapper for `xgboost` model
+* `CatBoost.py` - time series wrapper for `catboost`'s `CatBoostRegressor` model
+* `Prophet.py` - time series wrapper for facebook's `Prophet` model
 
 Examples:
 * `KNN_example.py` - example script for `KNN.py`, will display results in matplotlib's plot
 * `XGBoost_example.py` - example script for `XGBoost.py`, will display results in matplotlib's plot
+* `CatBoost_example.py` - example script for `CatBoost.py`, will display results in matplotlib's plot
+* `Prophet_example.py` - example script for `Prophet.py`, will display results in matplotlib's plot
 
 Every example script has a set of configurable parameters that will impact its performance. They are described in the wrapper constructor.
 
