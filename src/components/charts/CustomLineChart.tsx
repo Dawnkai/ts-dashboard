@@ -62,16 +62,25 @@ const CustomLineChart = ({ path, title, yLabel, xLabel, color }: LineProps) => {
 
 	const PATH: string = path;
 
-	useEffect(() => {
-		async function fetchData() {
+	function fetchData() {
+		async function fetchFunc() {
 			const response = await fetch(PATH);
 			return response.json();
 		}
-		setLoading(true);
-		fetchData().then((resp) => {
+
+		fetchFunc().then((resp) => {
 			setEntries(resp);
-			setLoading(false);
+			if (loading) setLoading(false);
 		});
+	}
+
+	useEffect(() => {
+		setLoading(true);
+		fetchData();
+		// Periodic fetching of data from backend (every 15 minutes)
+		const refetchFunc = setInterval(() => fetchData(), 900000);
+		// Return timeout teardown to stop it when component is destroyed
+		return () => clearInterval(refetchFunc);
 	}, []);
 
 	if (!entries.map) {

@@ -52,20 +52,29 @@ export default function Overview() {
 	const [fields, setFields] = useState<Fields>({});
 	const [loading, setLoading] = useState<boolean>(true);
 
-	useEffect(() => {
-		async function fetchData() {
+	function fetchData() {
+		async function fetchFunc() {
 			const response = await fetch("/api/overview");
 			return response;
 		}
-		setLoading(true);
-		fetchData().then((response) => {
+
+		fetchFunc().then((response) => {
 			if (response.status === 200) {
 				response.json().then((resp) => {
 					setFields(resp);
-					setLoading(false);
+					if (loading) setLoading(false);
 				});
 			}
 		});
+	}
+
+	useEffect(() => {
+		setLoading(true);
+		fetchData();
+		// Periodic fetching of data from backend (every 15 minutes)
+		const refetchFunc = setInterval(() => fetchData(), 900000);
+		// Return timeout teardown to stop it when component is destroyed
+		return () => clearInterval(refetchFunc);
 	}, []);
 
 	return (
