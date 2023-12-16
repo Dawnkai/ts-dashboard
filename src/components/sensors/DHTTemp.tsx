@@ -6,7 +6,7 @@ import BackButton from "../BackButton";
 const DHTTemp = () => (
 	<>
 		<CustomLineChart
-			path="/api/sensor/dht/temp"
+			path="/api/sensor/1"
 			title="Temperature registered by DHT-22 sensor over time"
 			xLabel="Time"
 			yLabel="Temperature [°C]"

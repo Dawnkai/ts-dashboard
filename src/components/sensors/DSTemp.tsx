@@ -6,7 +6,7 @@ import BackButton from "../BackButton";
 const DSTemp = () => (
 	<>
 		<CustomLineChart
-			path="/api/sensor/ds/temp"
+			path="/api/sensor/6"
 			title="Temperature registered by DS18B20 sensor over time"
 			xLabel="Time"
 			yLabel="Temperature [°C]"
