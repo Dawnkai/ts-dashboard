@@ -1,0 +1,10 @@
+# Libraries required to run examples from this folder
+matplotlib==3.8.2
+# Libraries required to use AI models from this folder
+scikit-learn==1.3.2
+pandas==2.1.4
+# Pip 21.3+ is required for xgboost, otherwise build from source:
+# https://xgboost.readthedocs.io/en/stable/
+xgboost==2.0.2
+catboost==1.2.2
+prophet==1.1.5
