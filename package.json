@@ -1,5 +1,5 @@
 {
-  "name": "ttn-dashboard",
+  "name": "ts-dashboard",
   "version": "1.0.0",
   "description": "React dashboard for ThingSpeak measurements",
   "main": "index.js",

@@ -46,7 +46,7 @@ export default function Header() {
 	return (
 		<div className="d-flex w-100 justify-content-between mt-4 mb-4">
 			<div className="title-container d-flex flex-column">
-				<h1 className="main-title">TTN Dashboard</h1>
+				<h1 className="main-title">TS Dashboard</h1>
 				<h3 className="page-title">{decodePathName(location.pathname)}</h3>
 			</div>
 			<div className="nav-menu d-flex align-items-baseline">
