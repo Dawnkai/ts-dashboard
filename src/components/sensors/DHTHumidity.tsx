@@ -6,7 +6,7 @@ import BackButton from "../BackButton";
 const DHTHumidity = () => (
 	<>
 		<CustomLineChart
-			path="/api/sensor/dht/humidity"
+			path="/api/sensor/2"
 			title="Humidity registered by DHT-22 sensor over time"
 			xLabel="Time"
 			yLabel="Humidity [%]"

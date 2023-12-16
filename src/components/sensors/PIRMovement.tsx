@@ -6,7 +6,7 @@ import BackButton from "../BackButton";
 const PIRMovement = () => (
 	<>
 		<CustomLineChart
-			path="/api/sensor/pir/movement"
+			path="/api/sensor/7"
 			title="Movement registered by PIR sensor over time"
 			xLabel="Time"
 			yLabel="People"

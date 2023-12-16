@@ -129,82 +129,11 @@ def get_overview():
 
     return jsonify(overview), 200
 
-
-@app.route("/sensor/dht/temp")
+@app.route("/sensor/<sensor_id>")
 @jwt_required()
-def get_dht_temp():
+def get_sensor_data(sensor_id: int):
     resp = requests.get(
-        f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/1.json"
+        f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/{sensor_id}.json"
     )
     data = resp.json()
-    return jsonify(convert_sensor_data(data["feeds"], "field1")), 200
-
-
-@app.route("/sensor/dht/humidity")
-@jwt_required()
-def get_dht_humidity():
-    resp = requests.get(
-        f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/2.json"
-    )
-    data = resp.json()
-    return jsonify(convert_sensor_data(data["feeds"], "field2")), 200
-
-
-@app.route("/sensor/bh/luminosity")
-@jwt_required()
-def get_bh_luminosity():
-    resp = requests.get(
-        f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/3.json"
-    )
-    data = resp.json()
-    return jsonify(convert_sensor_data(data["feeds"], "field3")), 200
-
-
-@app.route("/sensor/bmp/pressure")
-@jwt_required()
-def get_bmp_pressure():
-    resp = requests.get(
-        f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/4.json"
-    )
-    data = resp.json()
-    return jsonify(convert_sensor_data(data["feeds"], "field4")), 200
-
-
-@app.route("/sensor/ds/heater-temp")
-@jwt_required()
-def get_ds_heater_temp():
-    resp = requests.get(
-        f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/5.json"
-    )
-    data = resp.json()
-    return jsonify(convert_sensor_data(data["feeds"], "field5")), 200
-
-
-@app.route("/sensor/ds/temp")
-@jwt_required()
-def get_ds_temp():
-    resp = requests.get(
-        f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/6.json"
-    )
-    data = resp.json()
-    return jsonify(convert_sensor_data(data["feeds"], "field6")), 200
-
-
-@app.route("/sensor/pir/movement")
-@jwt_required()
-def get_pir_movement():
-    resp = requests.get(
-        f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/7.json"
-    )
-    data = resp.json()
-    return jsonify(convert_sensor_data(data["feeds"], "field7")), 200
-
-
-@app.route("/sensor/bmp/temp")
-@jwt_required()
-def get_bmp_temp():
-    resp = requests.get(
-        f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/8.json"
-    )
-    data = resp.json()
-    return jsonify(convert_sensor_data(data["feeds"], "field8")), 200
+    return jsonify(convert_sensor_data(data["feeds"], f"field{sensor_id}")), 200

@@ -6,7 +6,7 @@ import BackButton from "../BackButton";
 const BMPPressure = () => (
 	<>
 		<CustomLineChart
-			path="/api/sensor/bmp/pressure"
+			path="/api/sensor/4"
 			title="Pressure registered by BMP-180 sensor over time"
 			xLabel="Time"
 			yLabel="Pressure [hPa]"
