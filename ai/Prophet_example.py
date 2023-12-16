@@ -34,12 +34,12 @@ input_data = get_data(API_ENDPOINT, DEVICE_ID, ["days=2"])
 X, y = process_data(input_data, DEVICE_ID)
 
 prophet_example = TimeSeriesProphet(growth=PROPHET_GROWTH, n_changepoints=PROPHET_NUM_CHANGEPOINTS)
-prophet_example.fit(X, y, True)
+prophet_example.fit2(X, y, True)
 
 start = datetime.now()
 end = start + timedelta(days=1)
 
-prophet_result = prophet_example.predict(end, timedelta(minutes=1))
+prophet_result = prophet_example.predict2(end, timedelta(minutes=1))
 
 X_result = prophet_result[['ds']].values.astype('datetime64[us]').tolist()
 y_result = prophet_result[['yhat']].values.tolist()

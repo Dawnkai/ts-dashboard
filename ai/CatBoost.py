@@ -3,25 +3,17 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
-class TimeSeriesCatBoost:
+class TimeSeriesCatBoost(CatBoostRegressor):
     """
     Time series regressor using CatBoost. It works similar to XGBoost, but creates symmetrical trees.
     Implemented with the help of this video: https://www.youtube.com/watch?v=yeU9uv7fb28
-
-    num_estimators: number of estimators in regressor
-    early_stopping_rounds: if after this value the accuracy of the model does not improve, stop training
-    learning_rate: learning rate of the model
     """
     def __init__(
             self,
-            num_estimators = 1000,
-            early_stopping_rounds = 50,
-            learning_rate = 0.001
+            *args,
+            **kwargs
         ):
-        self.model = None
-        self.num_estimators = num_estimators
-        self.early_stopping_rounds = early_stopping_rounds
-        self.learning_rate = learning_rate
+        super().__init__(*args, **kwargs)
         # Features provided to the regressor (X)
         self.feature_columns = ["hour", "minute", "second", "weekday", "month"]
         # The name of the values, which will take form of a column with this name in input dataset (y)
@@ -63,9 +55,11 @@ class TimeSeriesCatBoost:
             "month": months
         })
 
-    def fit(self, X: list[str] | list[datetime], y: list[str] | list[float], process_data = False) -> None:
+    def fit2(self, X: list[str] | list[datetime], y: list[str] | list[float], process_data: bool, *args, **kwargs) -> None:
         """
         Fit the regressor with provided data.
+
+        process_data: should the data be processed into a format accepted by CatBoost.
         """
         if process_data:
             X, y = self.process_data(X, y)
@@ -75,16 +69,10 @@ class TimeSeriesCatBoost:
         X_train = features[self.feature_columns]
         y_train = features[self.value_column]
 
-        self.model = CatBoostRegressor(
-            learning_rate=self.learning_rate,
-            n_estimators=self.num_estimators,
-            early_stopping_rounds=self.early_stopping_rounds,
-        )
-
-        self.model.fit(X_train, y_train)
+        self.fit(X_train, y_train, *args, **kwargs)
         
 
-    def predict(self, start_date: datetime, end_date: datetime, interval = timedelta(minutes=1)) -> [list[datetime], list[float]]:
+    def predict2(self, start_date: datetime, end_date: datetime, interval: timedelta, *args, **kwargs) -> [list[datetime], list[float]]:
         """
         Make a prediction using learned data.
         start_date: start date of prediction
@@ -102,4 +90,4 @@ class TimeSeriesCatBoost:
         
         predict_features = self.create_features(datetimes, values)
 
-        return datetimes, self.model.predict(predict_features[self.feature_columns]).tolist()
+        return datetimes, self.predict(predict_features[self.feature_columns], *args, **kwargs).tolist()

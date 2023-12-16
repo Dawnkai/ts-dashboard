@@ -3,35 +3,33 @@ import pandas as pd
 
 from datetime import datetime, timedelta
 
-class TimeSeriesXGBoost:
+class TimeSeriesXGBoost(xgb.XGBRegressor):
     """
     Time series regressor using XGBoost.
     Implemented with the help of this video: https://www.youtube.com/watch?v=vV12dGe_Fho
 
     test_size: size of the test dataset (<0, 1>)
-    num_estimators: number of estimators in regressor
-    early_stopping_rounds: if after this value the accuracy of the model does not improve, stop training
-    learning_rate: learning rate of the model
-    verbose: if set to True, training will display results of every iteration, otherwise results of n-th iteration
+    params: parameters for the XGBRegressor constructor
     """
     def __init__(
             self,
             test_size = 0.2,
-            num_estimators = 1000,
-            early_stopping_rounds = 50,
-            learning_rate = 0.001,
-            verbose = 100
+            params: dict = {}
         ):
-        self.model = None
         self.test_size = test_size
-        self.num_estimators = num_estimators
-        self.early_stopping_rounds = early_stopping_rounds
-        self.learning_rate = learning_rate
-        self.verbose = verbose
         # Features provided to the regressor (X)
         self.feature_columns = ["hour", "minute", "second", "weekday", "month"]
         # The name of the values, which will take form of a column with this name in input dataset (y)
         self.value_column = ["value"]
+        # Because fit of XGBoost depends on params, set them here (otherwise it will crash)
+        self.params = params
+        # XGboost is based on scikit-learn, so, again, we cannot use *args nor **kwargs here
+        # 💀 bruh imagine not allowing to copy constructor signature
+        # cringe
+        super().__init__()
+        # Instead of copying arguments from original constructor, pass them using set_params
+        self.set_params(**params)
+
 
     def train_test_split(self, X: list[datetime], y: list[float], test_size: float = 0.2) -> [[list[datetime], list[float]], [list[datetime], list[float]]]:
         """
@@ -77,7 +75,7 @@ class TimeSeriesXGBoost:
             "month": months
         })
 
-    def fit(self, X: list[str] | list[datetime], y: list[str] | list[float], process_data = False) -> None:
+    def fit2(self, X: list[str] | list[datetime], y: list[str] | list[float], process_data: bool, *args, **kwargs) -> None:
         """
         Fit the regressor with provided data.
         """
@@ -94,15 +92,10 @@ class TimeSeriesXGBoost:
         X_test = test_features[self.feature_columns]
         y_test = test_features[self.value_column]
 
-        self.model = xgb.XGBRegressor(
-            n_estimators=self.num_estimators,
-            early_stopping_rounds=self.early_stopping_rounds,
-            learning_rate=self.learning_rate
-        )
-        self.model.fit(X_train, y_train, eval_set=[(X_train, y_train), (X_test, y_test)], verbose=self.verbose)
+        self.fit(X=X_train, y=y_train, eval_set=[(X_train, y_train), (X_test, y_test)], *args, **kwargs)
         
 
-    def predict(self, start_date: datetime, end_date: datetime, interval = timedelta(minutes=1)) -> [list[datetime], list[float]]:
+    def predict2(self, start_date: datetime, end_date: datetime, interval: timedelta, *args, **kwargs) -> [list[datetime], list[float]]:
         """
         Make a prediction using learned data.
         start_date: start date of prediction
@@ -120,4 +113,4 @@ class TimeSeriesXGBoost:
         
         predict_features = self.create_features(datetimes, values)
 
-        return datetimes, self.model.predict(predict_features[self.feature_columns]).tolist()
+        return datetimes, self.predict(X=predict_features[self.feature_columns], *args, **kwargs).tolist()

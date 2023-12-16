@@ -33,13 +33,13 @@ def process_data(json_data: list[dict], device_id: int) -> [list[str], list[str]
 input_data = get_data(API_ENDPOINT, DEVICE_ID, ["days=2"])
 X, y = process_data(input_data, DEVICE_ID)
 
-knn_example = TimeSeriesKNN(num_neighbors=NUM_NEIGHBORS, daily=DAILY_LEARNING)
-knn_example.fit(X, y, True)
+knn_example = TimeSeriesKNN(n_neighbors=NUM_NEIGHBORS, daily=DAILY_LEARNING)
+knn_example.fit2(X=X, y=y, process_data=True)
 
 start = datetime.now()
 end = start + timedelta(days=1)
 
-knn_result = knn_example.predict(start, end, timedelta(minutes=1))
+knn_result = knn_example.predict2(start_date=start, end_date=end, interval=timedelta(minutes=1))
 
 plt.plot(knn_result[0], knn_result[1])
 step_size = len(knn_result[0]) // NUM_X_TICKS

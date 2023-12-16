@@ -1,27 +1,19 @@
 import pandas as pd
 
+from datetime import datetime, timedelta
 from prophet import Prophet
 
-import pandas as pd
-
-from datetime import datetime, timedelta
-
-class TimeSeriesProphet:
+class TimeSeriesProphet(Prophet):
     """
     Time series regressor using Prophet.
     Implemented with the help of the official docs: https://facebook.github.io/prophet/docs/quick_start.html
-
-    growth: trend, can be 'linear', 'logistic' or 'flat'
-    n_changepoints: number of potential changepoints to include
     """
     def __init__(
             self,
-            growth = 'linear',
-            n_changepoints = 25
+            *args,
+            **kwargs
         ):
-        self.model = None
-        self.growth = growth
-        self.n_changepoints = n_changepoints
+        super().__init__(*args, **kwargs)
 
     def process_data(self, X: list[str], y: list[str]) -> pd.DataFrame:
         """
@@ -39,20 +31,22 @@ class TimeSeriesProphet:
             "y": parsed_y
         })
 
-    def fit(self, X: list[str] | list[datetime], y: list[str] | list[float], process_data = False) -> None:
+    def fit2(self, X: list[str] | list[datetime], y: list[str] | list[float], process_data: bool, *args, **kwargs) -> None:
         """
         Fit the regressor with provided data.
+
+        process_data: should the X and y be processed to fit Prophet model.
         """
         if process_data:
             df = self.process_data(X, y)
 
-        self.model = Prophet(changepoint_prior_scale=0.1, daily_seasonality=True, growth=self.growth, n_changepoints=self.n_changepoints)
-        self.model.fit(df)
+        self.fit(df=df, *args, **kwargs)
         
 
-    def predict(self, end_date: datetime, interval = timedelta(minutes=1)) -> pd.DataFrame:
+    def predict2(self, end_date: datetime, interval: timedelta, *args, **kwargs) -> pd.DataFrame:
         """
         Make a prediction using learned data.
+
         end_date: end date of prediction
         interval: how often should the prediction be performed between start_date and end_date
         """
@@ -63,6 +57,6 @@ class TimeSeriesProphet:
             current_date += interval
             num_datetimes += 1
         # Create an array of future dates, to create predictions
-        future = self.model.make_future_dataframe(periods=num_datetimes, freq=interval)
+        future = self.make_future_dataframe(periods=num_datetimes, freq=interval)
 
-        return self.model.predict(future)
+        return self.predict(df=future, *args, **kwargs)

@@ -2,31 +2,43 @@ import numpy as np
 
 from datetime import datetime, timedelta
 from sklearn.neighbors import KNeighborsRegressor
+from typing import Callable
 
-class TimeSeriesKNN:
+class TimeSeriesKNN(KNeighborsRegressor):
     """
     K-Neighbors Classifier for Time Series forecasting.
 
-    num_neighbors: number of neighbors in prediction
-    weights: weights used in prediction (uniform or distance)
-    algorithm: algorithm for computing neighbors (auto, ball_tree, kd_tree, brute)
-    p: power number of minkowski metric
     daily: should the model learn excluding days, including only time (True) or including days (False)
     granulaity: should the predictions be split by seconds (s), minutes (min) or hours (h)
     """
     def __init__(
             self,
-            num_neighbors=3,
-            weights='distance',
-            algorithm='auto',
-            p=2,
-            metric='minkowski',
-            daily=False,
-            granularity='min'
+            daily: bool = False,
+            granularity: str = "min",
+            n_neighbors: int = 5,
+            weights: str = "uniform",
+            algorithm: str = "auto",
+            leaf_size: int = 30,
+            p: float = 2,
+            metric: str | Callable = 'minkowski',
+            metric_params: dict = None,
+            n_jobs: int = None
         ):
-        self.model = KNeighborsRegressor(n_neighbors=num_neighbors, weights=weights, algorithm=algorithm, p=p, metric=metric)
         self.daily = daily
         self.granularity = granularity
+        # Unfortunately, KNeighborsRegressor does not support inheritance, so we have to copy entire
+        # constructor parameters signature.
+        # More about it here: https://github.com/scikit-learn/scikit-learn/issues/13555
+        super().__init__(
+            n_neighbors=n_neighbors,
+            weights=weights,
+            algorithm=algorithm,
+            leaf_size=leaf_size,
+            p=p,
+            metric=metric,
+            metric_params=metric_params,
+            n_jobs=n_jobs
+        )
     
     def date_to_ordinal(self, input_date : str | datetime) -> int:
         """
@@ -68,15 +80,15 @@ class TimeSeriesKNN:
                 parsed_y.append(float(label))
         return parsed_X, parsed_y
 
-    def fit(self, X, y, process_data = False) -> None:
+    def fit2(self, X: list[str] | list[int], y: list[str] | list[float], process_data: bool, *args, **kwargs) -> None:
         """
         Fit the regressor with provided data.
         """
         if process_data:
             X, y = self.process_data(X, y)
-        self.model.fit(X, y)
+        self.fit(X=X, y=y, *args, **kwargs)
 
-    def predict(self, start_date: datetime, end_date: datetime, interval = timedelta(minutes=1)) -> [list[datetime], list[float]]:
+    def predict2(self, start_date: datetime, end_date: datetime, interval: timedelta) -> [list[datetime], list[float]]:
         """
         Make a prediction using learned data.
 
@@ -103,4 +115,4 @@ class TimeSeriesKNN:
             datetimes.append(current_date)
             current_date += interval
         
-        return datetimes, self.model.predict(times)
+        return datetimes, self.predict(times)

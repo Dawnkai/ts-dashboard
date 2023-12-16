@@ -6,7 +6,6 @@ from CatBoost import TimeSeriesCatBoost
 
 API_ENDPOINT = "https://api.thingspeak.com/channels/202842"
 DEVICE_ID = 1
-TEST_SIZE = 0.2
 NUM_ESTIMATORS = 1000
 # Stop after this many iterations if there is no accuracy improvement
 STOPPING_ROUNDS = 50
@@ -38,13 +37,13 @@ def process_data(json_data: list[dict], device_id: int) -> [list[str], list[str]
 input_data = get_data(API_ENDPOINT, DEVICE_ID, ["days=2"])
 X, y = process_data(input_data, DEVICE_ID)
 
-catboost_example = TimeSeriesCatBoost(TEST_SIZE, NUM_ESTIMATORS, NUM_ESTIMATORS, LEARNING_RATE, VERBOSE_COUNT)
-catboost_example.fit(X, y, True)
+catboost_example = TimeSeriesCatBoost(n_estimators=NUM_ESTIMATORS, learning_rate=LEARNING_RATE, verbose=VERBOSE_COUNT)
+catboost_example.fit2(X=X, y=y, process_data=True)
 
 start = datetime.now()
 end = start + timedelta(days=1)
 
-catboost_result = catboost_example.predict(start, end, timedelta(minutes=1))
+catboost_result = catboost_example.predict2(start_date=start, end_date=end, interval=timedelta(minutes=1))
 
 plt.plot(catboost_result[0], catboost_result[1])
 step_size = len(catboost_result[0]) // NUM_X_TICKS
