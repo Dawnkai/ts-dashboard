@@ -1,13 +1,13 @@
 from flask import Flask, jsonify, g, request
 from datetime import timedelta, datetime, timezone
 
-import requests
 import sqlite3
 
 from flask_jwt_extended import create_access_token, jwt_required, JWTManager, \
     get_jwt, get_jwt_identity, set_access_cookies, unset_jwt_cookies
 
-from utils import authenticate_user, convert_sensor_data, user_exists
+from utils import authenticate_user, user_exists, fetch_overview, fetch_sensor_data, \
+    flatten, generate_csv_file
 
 app = Flask(__name__)
 app.config["API"] = "https://api.thingspeak.com"
@@ -107,33 +107,59 @@ def login():
 
 @app.route("/overview")
 def get_overview():
-    resp = requests.get(
-        f"{app.config['API']}/channels/{app.config['CHANNEL']}/feeds.json"
-    )
-    data = resp.json()
+    return jsonify(
+        fetch_overview(
+            f"{app.config['API']}/channels/{app.config['CHANNEL']}/feeds.json"
+        )
+    ), 200
 
-    # value keys are as follows field{1-9}
-    channel_keys = [f"field{idx}" for idx in range(1, 9)]
-
-    overview = {}
-    # Add titles of all fields with data in the channel
-    for key in channel_keys:
-        overview[key] = {"title": data["channel"][key]}
-
-    # Iterate over latest values for fields and choose latest non-null values
-    for feed in data["feeds"]:
-        for key in channel_keys:
-            if feed[key] is not None:
-                # Some fields have \n or \r appended to them, this removes them
-                overview[key]["value"] = str(feed[key]).strip()
-
-    return jsonify(overview), 200
 
 @app.route("/sensor/<sensor_id>")
 @jwt_required()
 def get_sensor_data(sensor_id: int):
-    resp = requests.get(
-        f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/{sensor_id}.json"
-    )
-    data = resp.json()
-    return jsonify(convert_sensor_data(data["feeds"], f"field{sensor_id}")), 200
+    return jsonify(
+        fetch_sensor_data(
+            f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/{sensor_id}.json",
+            sensor_id
+        )
+    ), 200
+
+
+# The last part of the url is the name of the returned file
+# I tried searching for how to change the name of a file stream in Flask
+# but I was not able to find anything, so I set the name in here
+# We could check if setting filename in Content-Disposition will work
+# https://stackoverflow.com/questions/41543951/how-to-change-downloading-name-in-flask
+@app.route("/export/export.csv", methods=["POST"])
+def export_csv():
+    if not request.is_json:
+        return jsonify({"msg": "Request is not a json"}), 400
+
+    export_params = request.get_json()
+    sensor_data = []
+    # So uhh, the code below could use some refactoring, because it looks very sophisticated to me,
+    # but it will probably be rewritten when we add database values to API response, so I'll leave it be
+    # for now.
+
+    # sensors in request json contain ids of sensors to fetch data for
+    if "sensors" in export_params:
+        sensor_ids = export_params["sensors"]
+        for sensor_id in sensor_ids:
+            sensor_data.append(
+                fetch_sensor_data(
+                    f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/{sensor_id}.json",
+                    sensor_id
+                )
+            )
+        sensor_data = flatten(sensor_data)
+    else:
+        # If no sensor ids are provided, send back overview
+        overview = fetch_overview(
+            f"{app.config['API']}/channels/{app.config['CHANNEL']}/feeds.json"
+        )
+        sensor_data = [
+            overview[key] for key in overview
+        ]
+    if len(sensor_data) > 0:
+        return generate_csv_file(sensor_data), {"Content-Type": "text/csv"}
+    return jsonify({"msg": "Unable to create csv export"}), 500

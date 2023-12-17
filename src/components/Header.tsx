@@ -6,11 +6,6 @@ import { ROUTES } from "../globals/routes";
 import { isLoggedIn, logOut } from "../globals/utils";
 
 function decodePathName(pathName: string) {
-	// This can be replaced by passing props with page name to Route in react-dom
-	// Literally how? Header is outside of Routes so we don't have to put it into every component
-	// If you can do it without copy pasting Header into every component, go ahead
-
-	// Both upper comments were not written by me, I must have screwed up something in commit history, but yeah xD
 	switch (pathName) {
 		case "/":
 			return "Overview";
