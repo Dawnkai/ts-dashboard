@@ -11,19 +11,23 @@ interface Fields {
 	[key: string]: {
 		title: string;
 		value: string;
+		min?: string;
+		max?: string;
 	};
 }
 
 interface CardProps {
 	title: string;
 	value: string;
+	minValue?: string;
+	maxValue?: string;
 	icon: string;
 	iconColor?: string;
 	unit: string;
 	goTo: string;
 }
 
-const Card = ({ title, value, icon, unit, iconColor, goTo }: CardProps) => {
+const Card = ({ title, value, minValue, maxValue, icon, unit, iconColor, goTo }: CardProps) => {
 	const navigate = useNavigate();
 
 	return (
@@ -43,6 +47,11 @@ const Card = ({ title, value, icon, unit, iconColor, goTo }: CardProps) => {
 					<span className="sensor-value">{value}</span>
 					<span>{unit}</span>
 				</span>
+			</div>
+			<div className="card-footer d-flex justify-content-around align-items-center mt-3">
+				{ minValue ? <span>Min: <b>{minValue}</b></span> : null }
+				{ maxValue ? <span>Max: <b>{maxValue}</b></span> : null }
+				{ !minValue && !maxValue ? <b>No data</b> : null }
 			</div>
 		</div>
 	);
@@ -92,6 +101,8 @@ export default function Overview() {
 						<Card
 							title={fields?.field1?.title}
 							value={fields?.field1?.value}
+							minValue={fields?.field1?.min}
+							maxValue={fields?.field1?.max}
 							icon="solar:temperature-bold-duotone"
 							unit="°C"
 							goTo={ROUTES.DHT_temperature}
@@ -100,6 +111,8 @@ export default function Overview() {
 						<Card
 							title={fields?.field2?.title}
 							value={fields?.field2?.value}
+							minValue={fields?.field2?.min}
+							maxValue={fields?.field2?.max}
 							icon="solar:waterdrops-bold-duotone"
 							unit="%"
 							goTo={ROUTES.DHT_humidity}
@@ -109,6 +122,8 @@ export default function Overview() {
 						<Card
 							title={fields?.field3?.title}
 							value={fields?.field3?.value}
+							minValue={fields?.field3?.min}
+							maxValue={fields?.field3?.max}
 							icon="solar:flashlight-on-bold-duotone"
 							unit="lx"
 							goTo={ROUTES.BH_luminosity}
@@ -120,6 +135,8 @@ export default function Overview() {
 						<Card
 							title={fields?.field4?.title}
 							value={fields?.field4?.value}
+							minValue={fields?.field4?.min}
+							maxValue={fields?.field4?.max}
 							icon="solar:wind-bold-duotone"
 							unit="hPa"
 							goTo={ROUTES.BMP_pressure}
@@ -129,6 +146,8 @@ export default function Overview() {
 						<Card
 							title={fields?.field5?.title}
 							value={fields?.field5?.value}
+							minValue={fields?.field5?.min}
+							maxValue={fields?.field5?.max}
 							icon="solar:temperature-bold-duotone"
 							unit="°C"
 							goTo={ROUTES.DS_heater_temperature}
@@ -137,6 +156,8 @@ export default function Overview() {
 						<Card
 							title={fields?.field6?.title}
 							value={fields?.field6?.value}
+							minValue={fields?.field6?.min}
+							maxValue={fields?.field6?.max}
 							icon="solar:temperature-bold-duotone"
 							unit="°C"
 							goTo={ROUTES.DS_temperature}
@@ -147,6 +168,8 @@ export default function Overview() {
 						<Card
 							title={fields?.field7?.title}
 							value={fields?.field7?.value}
+							minValue={fields?.field7?.min}
+							maxValue={fields?.field7?.max}
 							icon="solar:people-nearby-bold-duotone"
 							unit=""
 							goTo={ROUTES.PIR_movement}
@@ -156,6 +179,8 @@ export default function Overview() {
 						<Card
 							title={fields?.field8?.title}
 							value={fields?.field8?.value}
+							minValue={fields?.field8?.min}
+							maxValue={fields?.field8?.max}
 							icon="solar:temperature-bold-duotone"
 							unit="°C"
 							goTo={ROUTES.BMP_temperature}
