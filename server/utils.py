@@ -1,6 +1,7 @@
 import requests
 import sqlite3
 
+from datetime import datetime
 from typing import Any
 
 def convert_sensor_data(data_json : dict, field_name : str) -> list[dict]:
@@ -61,7 +62,9 @@ def generate_csv_file(data: list[dict]):
         headers = { f"key{idx}": str(key) for idx, key in enumerate(data[0].keys()) }
         data = [headers] + data
     for row in data:
-        yield f"{','.join([convert_to_csv(value) for value in row.values()])}\n"
+        # In overview response, the "created_at" field is a value, not a dict, so skip it
+        if type(row) == dict:
+            yield f"{','.join([convert_to_csv(value) for value in row.values()])}\n"
 
 def fetch_overview(overview_url: str) -> dict:
     """
@@ -80,13 +83,32 @@ def fetch_overview(overview_url: str) -> dict:
     for key in channel_keys:
         overview[key] = {"title": data["channel"][key]}
 
-    # Iterate over latest values for fields and choose latest non-null values
-    for feed in data["feeds"]:
+    latest_date = None
+    # ThingSpeak lists feeds in ascending dates, so we iterate backwards to get latest values
+    for idx in range(len(data["feeds"]) - 1, -1, -1):
+        # If we went over the entire day of latest non-null value, stop iterating
+        if latest_date is not None:
+            current_date = datetime.strptime(data["feeds"][idx]["created_at"], "%Y-%m-%dT%H:%M:%SZ")
+            if current_date.date() != latest_date.date():
+                break
+        # Otherwise proceed as normal
         for key in channel_keys:
-            if feed[key] is not None:
-                # Some fields have \n or \r appended to them, this removes them
-                overview[key]["value"] = str(feed[key]).strip()
-    
+            if data["feeds"][idx][key] is not None:
+                # Set the date of the earliest non-null feed in the API response
+                if latest_date is None:
+                    latest_date = datetime.strptime(data["feeds"][idx]["created_at"], "%Y-%m-%dT%H:%M:%SZ")
+                # Remove \n, \r, \b with strip
+                overview[key]["value"] = str(data["feeds"][idx][key]).strip()
+                # Update minimum and maximum values for each sensor
+                try:
+                    if "min" not in overview[key] or float(data["feeds"][idx][key]) < overview[key]["min"]:
+                        overview[key]["min"] = float(data["feeds"][idx][key])
+                    if "max" not in overview[key] or float(data["feeds"][idx][key]) > overview[key]["max"]:
+                        overview[key]["max"] = float(data["feeds"][idx][key])
+                except ValueError:
+                    pass
+    # Add date of the day of displayed values to overview
+    overview["created_at"] = latest_date.date() if latest_date is not None else None
     return overview
 
 def fetch_sensor_data(sensor_url: str, sensor_id: int) -> list[dict]:
