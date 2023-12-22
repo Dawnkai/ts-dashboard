@@ -32,7 +32,7 @@ const Card = ({ title, value, minValue, maxValue, icon, unit, iconColor, goTo }:
 
 	return (
 		<div
-			className={`col-3 card card-container justify-content-center ${isLoggedIn() ? '' : 'card-container-disabled'}`}
+			className={`col-3 card card-container justify-content-center ${isLoggedIn() ? "" : "card-container-disabled"}`}
 			onClick={(event) => {
 				// Without preventDefault, if user isn't logged in, onClick will refresh the page
 				event.preventDefault();
@@ -48,10 +48,18 @@ const Card = ({ title, value, minValue, maxValue, icon, unit, iconColor, goTo }:
 					<span>{unit}</span>
 				</span>
 			</div>
-			<div className="card-footer d-flex justify-content-around align-items-center mt-3">
-				{ minValue ? <span>Min: <b>{minValue}</b></span> : null }
-				{ maxValue ? <span>Max: <b>{maxValue}</b></span> : null }
-				{ !minValue && !maxValue ? <b>No data</b> : null }
+			<div className="card-bottom d-flex justify-content-around align-items-center mt-3">
+				{minValue ? (
+					<span>
+						Min: <b>{minValue}</b>
+					</span>
+				) : null}
+				{maxValue ? (
+					<span>
+						Max: <b>{maxValue}</b>
+					</span>
+				) : null}
+				{!minValue && !maxValue ? <b>No data</b> : null}
 			</div>
 		</div>
 	);
