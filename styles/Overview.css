@@ -46,3 +46,10 @@
 .sensor-value {
     font-weight: 700;
 }
+
+.card-bottom {
+    background-color: rgb(245, 246, 248);
+    border-radius: 5px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}

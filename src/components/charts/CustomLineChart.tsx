@@ -6,6 +6,9 @@ import zoomPlugin from "chartjs-plugin-zoom";
 import "../../../styles/Chart.css";
 import { Icon } from "@iconify/react";
 
+// Set the interval for showing the x axis labels
+const INTERVAL = 2;
+
 interface Entry {
 	timestamp: string;
 	value: number;
@@ -21,6 +24,10 @@ type LineProps = {
 	xLabel: string;
 	color: string;
 };
+
+function pad(number: number) {
+	return number < 10 ? "0" + number : number;
+}
 
 /**
  * Component for displaying a line chart
@@ -88,12 +95,22 @@ const CustomLineChart = ({ path, title, yLabel, xLabel, color }: LineProps) => {
 	}
 
 	// Create data for the chart in the x axis
-	const labels = entries.map((entry) => {
+	const labels = entries.map((entry, index, array) => {
 		const date = new Date(entry.timestamp);
-		const hours = date.getHours().toString();
-		const minutes = date.getMinutes().toString();
-		const seconds = date.getSeconds().toString();
-		return `${date.toLocaleDateString()}, ${hours}:${minutes}:${seconds}`;
+		const hours = pad(date.getHours());
+		const minutes = pad(date.getMinutes());
+		const timeString = `${hours}:${minutes}`;
+
+		if (index === 0 || (array[index - 1] && new Date(array[index - 1].timestamp).toDateString() !== date.toDateString())) {
+			// Show date on first entry or when the date changes
+			return `${date.toLocaleDateString()}, ${timeString}`;
+		} else if (index % INTERVAL === 0) {
+			// Replace 'n' with your desired interval
+			// Show time at regular intervals
+			return timeString;
+		}
+		// Return null or an empty string for other entries
+		return "";
 	});
 
 	const values = entries.map((entry) => entry.value);
