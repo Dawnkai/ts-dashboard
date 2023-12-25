@@ -1,13 +1,14 @@
 from flask import Flask, jsonify, g, request
 from datetime import timedelta, datetime, timezone
 
+import requests
 import sqlite3
 
 from flask_jwt_extended import create_access_token, jwt_required, JWTManager, \
     get_jwt, get_jwt_identity, set_access_cookies, unset_jwt_cookies
 
-from utils import authenticate_user, user_exists, fetch_overview, fetch_sensor_data, \
-    flatten, generate_csv_file
+from utils import authenticate_user, user_exists, fetch_overview, convert_sensor_data, \
+    flatten, generate_csv_file, update_database, get_db_measurements
 
 app = Flask(__name__)
 app.config["API"] = "https://api.thingspeak.com"
@@ -107,25 +108,48 @@ def login():
 
 @app.route("/overview")
 def get_overview():
-    return jsonify(
-        fetch_overview(
-            f"{app.config['API']}/channels/{app.config['CHANNEL']}/feeds.json"
-        )
-    ), 200
+    try:
+        resp = requests.get(f"{app.config['API']}/channels/{app.config['CHANNEL']}/feeds.json")
+        if resp.status_code == 200:
+            data = resp.json()
+            db = get_db()
+            if db:
+                update_database(db, data)
+            return jsonify(fetch_overview(data)), 200
+    # If url does not exist (doesn't even return 404) GET will throw ConnectionError, so we ignore it and
+    # fetch data from the database anyway.
+    except ConnectionError:
+        pass
+    finally:
+        db = get_db()
+        if db:
+            return jsonify(fetch_overview(get_db_measurements(db))), 200
+        return jsonify({"msg": "Unable to fetch data"}), 500
 
 
 @app.route("/sensor/<sensor_id>")
 @jwt_required()
 def get_sensor_data(sensor_id: int):
-    return jsonify(
-        fetch_sensor_data(
-            f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/{sensor_id}.json",
-            sensor_id
-        )
-    ), 200
+    try:
+        resp = requests.get(f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/{sensor_id}.json")
+        if resp.status_code == 200:
+            data = resp.json()
+            db = get_db()
+            if db:
+                update_database(db, data)
+            return jsonify(convert_sensor_data(data["feeds"], f"field{sensor_id}")), 200
+    # If url does not exist (doesn't even return 404) GET will throw ConnectionError, so we ignore it and
+    # fetch data from the database anyway.
+    except ConnectionError:
+        pass
+    finally:
+        db = get_db()
+        if db:
+            return jsonify(convert_sensor_data(get_db_measurements(db, sensor_id), f"field{sensor_id}")), 200
+        return jsonify({"msg": "Unable to fetch data"}), 500
 
 
-# The last part of the url is the name of the returned file
+# The last part of the url is the name of the returned file (export.csv)
 # I tried searching for how to change the name of a file stream in Flask
 # but I was not able to find anything, so I set the name in here
 # We could check if setting filename in Content-Disposition will work
@@ -137,29 +161,22 @@ def export_csv():
 
     export_params = request.get_json()
     sensor_data = []
-    # So uhh, the code below could use some refactoring, because it looks very sophisticated to me,
-    # but it will probably be rewritten when we add database values to API response, so I'll leave it be
-    # for now.
+    db = get_db()
 
-    # sensors in request json contain ids of sensors to fetch data for
+    if not db:
+        return jsonify({"msg": "Unable to contact database"}), 500
+
     if "sensors" in export_params:
         sensor_ids = export_params["sensors"]
         for sensor_id in sensor_ids:
-            sensor_data.append(
-                fetch_sensor_data(
-                    f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/{sensor_id}.json",
-                    sensor_id
-                )
-            )
+            sensor_data.append(convert_sensor_data(get_db_measurements(db, sensor_id), f"field{sensor_id}"))
         sensor_data = flatten(sensor_data)
     else:
-        # If no sensor ids are provided, send back overview
-        overview = fetch_overview(
-            f"{app.config['API']}/channels/{app.config['CHANNEL']}/feeds.json"
-        )
+        overview = fetch_overview(get_db_measurements(db))
         sensor_data = [
             overview[key] for key in overview
         ]
+    
     if len(sensor_data) > 0:
         return generate_csv_file(sensor_data), {"Content-Type": "text/csv"}
     return jsonify({"msg": "Unable to create csv export"}), 500
