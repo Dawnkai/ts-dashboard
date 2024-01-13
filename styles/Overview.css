@@ -53,3 +53,8 @@
     padding-top: 8px;
     padding-bottom: 8px;
 }
+
+.export-container {
+    display: flex;
+    justify-content: flex-end;
+}
