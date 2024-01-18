@@ -7,6 +7,8 @@ import { ROUTES } from "./globals/routes";
 import { COLORS_CSS } from "./globals/colors";
 import { isLoggedIn } from "./globals/utils";
 
+import ExportButton from "./components/ExportButton";
+
 interface Fields {
 	[key: string]: {
 		title: string;
@@ -104,6 +106,9 @@ export default function Overview() {
 				</div>
 			) : (
 				<>
+					<div className="mb-4 container export-container">
+						<ExportButton/>
+					</div>
 					<div className="row justify-content-evenly mb-4">
 						{/* Temperatura (DHT-22) */}
 						<Card

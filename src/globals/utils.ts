@@ -50,3 +50,13 @@ export async function logOut() {
     await fetch("api/logout", { method: "HEAD" });
     localStorage.removeItem("loggedIn");
 }
+
+export function getDayBefore(date: Date) {
+    const dayBefore = new Date(date);
+    dayBefore.setDate(date.getDate() - 1);
+    return dayBefore;
+}
+
+export function mergeDateAndTime(date: string, time: string) {
+    return new Date(`${date}T${time}:00Z`)
+}

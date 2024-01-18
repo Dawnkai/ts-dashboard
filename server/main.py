@@ -160,23 +160,64 @@ def export_csv():
         return jsonify({"msg": "Request is not a json"}), 400
 
     export_params = request.get_json()
-    sensor_data = []
-    db = get_db()
+    if "source" not in export_params:
+        return jsonify({"msg": "Source not specified"}), 400
 
-    if not db:
-        return jsonify({"msg": "Unable to contact database"}), 500
+    result = []
+    sensor_ids = None
 
     if "sensors" in export_params:
         sensor_ids = export_params["sensors"]
+    db = get_db()
+    if not db:
+        return jsonify({"msg": "Unable to contact database"}), 500
+
+    query_params = ""
+    if "startDate" in export_params:
+        query_params += f"?start={export_params['startDate']}"
+        if "endDate" in export_params:
+            query_params += f"&end={export_params['endDate']}"
+    elif "endDate" in export_params:
+        query_params += f"?end={export_params['endDate']}"
+
+    if sensor_ids:
         for sensor_id in sensor_ids:
-            sensor_data.append(convert_sensor_data(get_db_measurements(db, sensor_id), f"field{sensor_id}"))
-        sensor_data = flatten(sensor_data)
+            sensor_data = None
+            if export_params["source"] == "api":
+                # Fetch csv data from API
+                api_resp = requests.get(f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/{sensor_id}.json{query_params}")
+                if api_resp.status_code == 200:
+                    sensor_resp = api_resp.json()
+                    sensor_data = convert_sensor_data(sensor_resp["feeds"], f"field{sensor_id}")
+            else:
+                # Fetch csv data from database
+                if "startDate" in export_params or "endDate" in export_params:
+                    sensor_data = get_db_measurements(db, sensor_id, 999, export_params["startDate"], export_params["endDate"])
+                else:
+                    sensor_data = get_db_measurements(db, sensor_id, 999)
+            if sensor_data:
+                result.append(sensor_data)
+        # Merge data for selected sensors
+        result = flatten(result)
+    # Get export for overview
     else:
-        overview = fetch_overview(get_db_measurements(db))
-        sensor_data = [
-            overview[key] for key in overview
-        ]
-    
-    if len(sensor_data) > 0:
-        return generate_csv_file(sensor_data), {"Content-Type": "text/csv"}
+        overview_data = None
+        if export_params["source"] == "api":
+            # Fetch csv data from API
+            api_resp = requests.get(f"{app.config['API']}/channels/{app.config['CHANNEL']}/feeds.json{query_params}")
+            if api_resp.status_code == 200:
+                overview_data = fetch_overview(api_resp.json())
+        else:
+            # Fetch csv data from database
+            if "startDate" in export_params or "endDate" in export_params:
+                overview_data = fetch_overview(get_db_measurements(db, size_limit=999, start_date=export_params["startDate"], end_date=export_params["endDate"]))
+            else:
+                overview_data = fetch_overview(get_db_measurements(db, size_limit=999))
+        if overview_data:
+            # Extract latest overview data from response
+            result = [
+                overview_data[key] for key in overview_data
+            ]
+    if len(result) > 0:
+        return generate_csv_file(result), {"Content-Type": "text/csv"}
     return jsonify({"msg": "Unable to create csv export"}), 500

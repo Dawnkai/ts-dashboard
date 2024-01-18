@@ -18,7 +18,7 @@ def convert_sensor_data(data_json : dict, field_name : str) -> list[dict]:
                     "id": entry["entry_id"],
                     "sensor_name": field_name,
                     "timestamp": str(entry["created_at"]),
-                    "value": float(entry[field_name]),
+                    "value": float(entry[field_name]) if entry[field_name] != 'None' else 0,
                 }
             )
     return result
@@ -130,7 +130,7 @@ def parse_update_row(row_data: dict) -> list[Any]:
     # the table schema for measurements
     mapping = {"created_at": 0, "entry_id": 1, "field1": 2, "field2": 3, "field3": 4, "field4": 5, "field5": 6, "field6": 7, "field7": 8, "field8": 9}
     for key in row_data:
-        parsed_row[mapping[key]] = row_data[key]
+        parsed_row[mapping[key]] = str(row_data[key]).replace("\n", "")
     return parsed_row
 
 def update_database(db_conn : sqlite3.Connection, raw_data: dict) -> None:
@@ -144,7 +144,8 @@ def update_database(db_conn : sqlite3.Connection, raw_data: dict) -> None:
     for feed in raw_data["feeds"]:
         row_to_insert = parse_update_row(feed)
         if any(row_to_insert[2:]):
-            data_to_insert.append(row_to_insert)
+            # Windows adds carriage returns to values for some reason, so remove them
+            data_to_insert.append([column.replace("\r", "") if type(column) == str else column for column in row_to_insert])
     # Bulk upsert operation, using connection as context manager executes code as a single transaction
     # https://docs.python.org/3/library/sqlite3.html#sqlite3-connection-context-manager
     with db_conn:
@@ -173,7 +174,7 @@ def update_database(db_conn : sqlite3.Connection, raw_data: dict) -> None:
         cur.execute('INSERT OR IGNORE INTO measurement SELECT * FROM temp_table')
     db_conn.commit()
 
-def get_db_measurements(db_conn : sqlite3.Connection, sensor_id : int | None = None, size_limit : int = 99) -> list[dict]:
+def get_db_measurements(db_conn : sqlite3.Connection, sensor_id : int | None = None, size_limit : int = 99, start_date : str | None = None, end_date : str | None = None) -> list[dict]:
     """
     Get measurements from the database. Used when network or endpoint is unavailable. It will match the format of the
     endpoint for fetch_overview (if sensor_id is None), or convert_sensor_data (is sensor_id is not None).
@@ -186,7 +187,10 @@ def get_db_measurements(db_conn : sqlite3.Connection, sensor_id : int | None = N
     keys = ["created_at", "entry_id", "field1", "field2", "field3", "field4", "field5", "field6", "field7", "field8"]
     if not sensor_id:
         # For overview
-        cur.execute(f"SELECT * FROM measurement ORDER BY measurement_id DESC LIMIT {size_limit}")
+        if not start_date or not end_date:
+            cur.execute(f"SELECT * FROM measurement ORDER BY measurement_id DESC LIMIT {size_limit}")
+        else:
+            cur.execute(f"SELECT * FROM measurement WHERE measurement_created_at BETWEEN ? AND ? ORDER BY measurement_id DESC LIMIT {size_limit}", [start_date, end_date])
         return dict(
             # This could be improved by creating a table in database with titles for each field, but I am skipping it here
             # by hard-coding values (man, do I love to be pressured by time)
@@ -205,5 +209,8 @@ def get_db_measurements(db_conn : sqlite3.Connection, sensor_id : int | None = N
             feeds=[dict(zip(keys, values)) for values in cur.fetchall()]
         )
     # For specific sensor
-    cur.execute(f"SELECT * FROM measurement WHERE measurement_field{sensor_id} IS NOT NULL ORDER BY measurement_id DESC LIMIT {size_limit}")
+    if not start_date or not end_date:
+        cur.execute(f"SELECT * FROM measurement WHERE measurement_field{sensor_id} IS NOT NULL ORDER BY measurement_id DESC LIMIT {size_limit}")
+    else:
+        cur.execute(f"SELECT * FROM measurement WHERE measurement_field{sensor_id} IS NOT NULL AND measurement_created_at BETWEEN ? AND ? ORDER BY measurement_id DESC LIMIT {size_limit}", [start_date, end_date])
     return [dict(zip(keys, values)) for values in cur.fetchall()]
