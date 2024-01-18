@@ -18,7 +18,7 @@ def convert_sensor_data(data_json : dict, field_name : str) -> list[dict]:
                     "id": entry["entry_id"],
                     "sensor_name": field_name,
                     "timestamp": str(entry["created_at"]),
-                    "value": float(entry[field_name]),
+                    "value": float(entry[field_name]) if entry[field_name] != 'None' else 0,
                 }
             )
     return result
@@ -144,7 +144,8 @@ def update_database(db_conn : sqlite3.Connection, raw_data: dict) -> None:
     for feed in raw_data["feeds"]:
         row_to_insert = parse_update_row(feed)
         if any(row_to_insert[2:]):
-            data_to_insert.append(row_to_insert)
+            # Windows adds carriage returns to values for some reason, so remove them
+            data_to_insert.append([column.replace("\r", "") if type(column) == str else column for column in row_to_insert])
     # Bulk upsert operation, using connection as context manager executes code as a single transaction
     # https://docs.python.org/3/library/sqlite3.html#sqlite3-connection-context-manager
     with db_conn:
