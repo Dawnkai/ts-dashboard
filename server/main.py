@@ -10,6 +10,11 @@ from flask_jwt_extended import create_access_token, jwt_required, JWTManager, \
 from utils import authenticate_user, user_exists, fetch_overview, convert_sensor_data, \
     flatten, generate_csv_file, update_database, get_db_measurements
 
+from ai.CatBoost import TimeSeriesCatBoost
+from ai.KNN import TimeSeriesKNN
+from ai.Prophet import TimeSeriesProphet
+from ai.XGBoost import TimeSeriesXGBoost
+
 app = Flask(__name__)
 app.config["API"] = "https://api.thingspeak.com"
 app.config["CHANNEL"] = 202842
@@ -148,6 +153,52 @@ def get_sensor_data(sensor_id: int):
             return jsonify(convert_sensor_data(get_db_measurements(db, sensor_id), f"field{sensor_id}")), 200
         return jsonify({"msg": "Unable to fetch data"}), 500
 
+
+@app.route("/sensor/<sensor_id>/predict", methods=["POST"])
+@jwt_required
+def get_sensor_data_prediction(sensor_id: int):
+    if not request.is_json:
+        return jsonify({"msg": "Request is not a json"}), 400
+
+    predict_params = request.get_json()
+    if "startDate" not in predict_params:
+        return jsonify({"msg": "Start date of prediction source data not specified"}), 400
+    
+    query_params = f"?start={predict_params['startDate']}"
+    if "endDate" in query_params:
+        query_params += f"&end={query_params['endDate']}"
+
+    algorithm = "CatBoost"
+    if "algorithm" in predict_params:
+        algorithm = predict_params["algorithm"]
+    
+    model = None
+    if algorithm == "CatBoost":
+        model = TimeSeriesCatBoost(n_estimators=1000, learning_rate=0.001, verbose=False)
+    elif algorithm == "KNN":
+        model = TimeSeriesKNN(n_neighbors=3, daily=True)
+    elif algorithm == "Prophet":
+        model = TimeSeriesProphet(growth="linear", n_changepoints=25)
+    elif algorithm == "XGBoost":
+        model = TimeSeriesXGBoost(test_size=0.2, params={
+            "n_estimators": 1000,
+            "learning_rate": 0.001
+        })
+    if not model:
+        return jsonify({"msg": "Unsupported model selected"}), 400
+
+    api_resp = requests.get(f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/{sensor_id}.json{query_params}")
+    prediction_data = [ val for val in api_resp.json()["feeds"] if val[f"field{sensor_id}"] is not None ]
+    X, y = model.initial_processing(prediction_data, sensor_id)
+
+    model.fit2(X, y, process_data=True)
+    result = model.predict2(
+        start_date=datetime.strptime(predict_params["startDate"], "%Y-%m-%dT%H:%M:%SZ"),
+        end_date=datetime.strptime(predict_params["endDate"], "%Y-%m-%dT%H:%M:%SZ") if "endDate" in predict_params else datetime.now(),
+        interval=timedelta(minutes=1)
+    )
+
+    return jsonify(model.extract_result(result)), 200
 
 # The last part of the url is the name of the returned file (export.csv)
 # I tried searching for how to change the name of a file stream in Flask
