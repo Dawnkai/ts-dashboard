@@ -199,8 +199,9 @@ const CustomLineChart = ({ path, title, yLabel, xLabel, color, predictionColor }
 		}
 
 		fetchFunc().then((resp) => {
-			const entryValues = resp.map((entry: Entry) => entry.value);
-			const entryLabels = resp.map((entry: Entry) => new Date(entry.timestamp));
+			console.log(resp);
+			const entryValues = resp.map((entry: Entry) => entry.value).reverse();
+			const entryLabels = resp.map((entry: Entry) => new Date(entry.timestamp)).reverse();
 			setLabels(processLabels(entryLabels));
 			setMeasurements(entryValues);
 			if (loading) setLoading(false);
@@ -222,7 +223,7 @@ const CustomLineChart = ({ path, title, yLabel, xLabel, color, predictionColor }
 
 	// console.log("MEASUREMENTS: ", measurements);
 	// console.log("PREDICTIONS: ", predictions);
-	// console.log("LABELS: ", processedLabels);
+	console.log("LABELS: ", labels);
 
 	// Set min and max values for the y axis as min and max values from the data with a margin of 5%
 	let min = measurements.length > 0 ? Math.min(...measurements) : 0;
@@ -238,7 +239,6 @@ const CustomLineChart = ({ path, title, yLabel, xLabel, color, predictionColor }
 			backgroundColor: color,
 		},
 	];
-
 	if (predictions.length > 0) {
 		datasets.push({
 			label: "Predictions",
