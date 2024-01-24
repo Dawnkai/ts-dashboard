@@ -4,5 +4,5 @@ dist
 server/__pycache__
 .parcel-cache
 server/database.db
-ai/__pycache__
-ai/catboost_info
+server/ai/__pycache__
+catboost_info

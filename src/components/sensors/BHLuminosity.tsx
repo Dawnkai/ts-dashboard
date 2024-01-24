@@ -6,13 +6,14 @@ import ExportButton from "../ExportButton";
 
 const BHLuminosity = () => (
 	<>
-		<ExportButton sensorIds={["3"]}/>
+		<ExportButton sensorIds={["3"]} />
 		<CustomLineChart
 			path="/api/sensor/3"
 			title="Luminosity registered by BH-1750 sensor over time"
 			xLabel="Time"
 			yLabel="Luminosity [lx]"
 			color={COLORS.orange}
+			predictionColor={COLORS.red}
 		/>
 		<BackButton />
 	</>

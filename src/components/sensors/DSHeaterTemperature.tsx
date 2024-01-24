@@ -6,13 +6,14 @@ import ExportButton from "../ExportButton";
 
 const DSHeaterTemp = () => (
 	<>
-		<ExportButton sensorIds={["5"]}/>
+		<ExportButton sensorIds={["5"]} />
 		<CustomLineChart
 			path="/api/sensor/5"
 			title="Heater temperature registered by DS18B20 sensor over time"
 			xLabel="Time"
 			yLabel="Temperature [°C]"
 			color={COLORS.red}
+			predictionColor={COLORS.orange}
 		/>
 		<BackButton />
 	</>
