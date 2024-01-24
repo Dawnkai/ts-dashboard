@@ -313,7 +313,7 @@ const CustomLineChart = ({ path, title, yLabel, xLabel, color, predictionColor }
 		},
 		elements: {
 			point: {
-				radius: 5,
+				radius: 2,
 			},
 		},
 	};
