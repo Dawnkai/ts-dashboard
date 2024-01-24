@@ -6,13 +6,14 @@ import ExportButton from "../ExportButton";
 
 const BMPPressure = () => (
 	<>
-		<ExportButton sensorIds={["4"]}/>
+		<ExportButton sensorIds={["4"]} />
 		<CustomLineChart
 			path="/api/sensor/4"
 			title="Pressure registered by BMP-180 sensor over time"
 			xLabel="Time"
 			yLabel="Pressure [hPa]"
 			color={COLORS.blue}
+			predictionColor={COLORS.green}
 		/>
 		<BackButton />
 	</>

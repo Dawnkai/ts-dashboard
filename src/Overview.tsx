@@ -29,6 +29,10 @@ interface CardProps {
 	goTo: string;
 }
 
+const toNumber = (value: string) => {
+	return value === "None" ? "- " : Number(value);
+};
+
 const Card = ({ title, value, minValue, maxValue, icon, unit, iconColor, goTo }: CardProps) => {
 	const navigate = useNavigate();
 
@@ -46,7 +50,7 @@ const Card = ({ title, value, minValue, maxValue, icon, unit, iconColor, goTo }:
 			<div className="card-text card-content align-items-center justify-content-center">
 				<Icon icon={icon} className="card-icon" width={48} height={48} style={{ color: iconColor }} />
 				<span className="card-value">
-					<span className="sensor-value">{value}</span>
+					<span className="sensor-value">{toNumber(value)}</span>
 					<span>{unit}</span>
 				</span>
 			</div>
@@ -107,7 +111,7 @@ export default function Overview() {
 			) : (
 				<>
 					<div className="mb-4 container export-container">
-						<ExportButton/>
+						<ExportButton />
 					</div>
 					<div className="row justify-content-evenly mb-4">
 						{/* Temperatura (DHT-22) */}

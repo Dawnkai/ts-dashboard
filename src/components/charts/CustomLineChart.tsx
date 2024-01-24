@@ -23,11 +23,49 @@ type LineProps = {
 	yLabel: string;
 	xLabel: string;
 	color: string;
+	predictionColor: string;
 };
 
 function pad(number: number) {
 	return number < 10 ? "0" + number : number;
 }
+
+// Create data for the chart in the x axis
+function processLabels(array: string[]) {
+	return array.map((entry, index, array) => {
+		const date = new Date(entry);
+		const hours = pad(date.getHours());
+		const minutes = pad(date.getMinutes());
+		const timeString = `${hours}:${minutes}`;
+
+		if (index === 0 || (array[index - 1] && new Date(array[index - 1]).toDateString() !== date.toDateString())) {
+			// Show date on first entry or when the date changes
+			return `${date.toLocaleDateString()}, ${timeString}`;
+		} else if (index % INTERVAL === 0) {
+			// Replace 'n' with your desired interval
+			// Show time at regular intervals
+			return timeString;
+		}
+		// Return null or an empty string for other entries
+		return "";
+	});
+}
+
+type SelectProps = {
+	setSelectedModel: (value: string) => void;
+};
+
+const Select = ({ setSelectedModel }: SelectProps) => {
+	return (
+		<select className="form-select col" aria-label="Model selection" onChange={(e) => setSelectedModel(e.target.value)} defaultValue="">
+			<option value="">Select model</option>
+			<option value="KNN">KNN</option>
+			<option value="CatBoost">CatBoost</option>
+			<option value="XGBoost">XGBoost</option>
+			<option value="Prophet">Prophet</option>
+		</select>
+	);
+};
 
 /**
  * Component for displaying a line chart
@@ -37,11 +75,96 @@ function pad(number: number) {
  * @param {string} yLabel Label of the y-axis
  * @param {string} xLabel Label of the x-axis
  * @param {string} color Color of the line
+ * @param {string} predictionColor Color of the prediction line
  * @returns
  */
-const CustomLineChart = ({ path, title, yLabel, xLabel, color }: LineProps) => {
-	const [entries, setEntries] = useState<Entry[]>([]);
+const CustomLineChart = ({ path, title, yLabel, xLabel, color, predictionColor }: LineProps) => {
+	const [labels, setLabels] = useState<string[]>([]);
+	const [measurements, setMeasurements] = useState([]);
+	const [predictions, setPredictions] = useState([]);
+
 	const [loading, setLoading] = useState<boolean>(true);
+	const [loadingPrediction, setLoadingPrediction] = useState<boolean>(false);
+
+	const [startDate, setStartDate] = useState<Date | null>(null);
+	const [endDate, setEndDate] = useState<Date | null>(null);
+	const [selectedModel, setSelectedModel] = useState<string>("");
+
+	const modelSelection = () => {
+		const handleStartDate = (event: React.ChangeEvent<HTMLInputElement>) => {
+			setStartDate(new Date(event.target.value));
+		};
+
+		const handleEndDate = (event: React.ChangeEvent<HTMLInputElement>) => {
+			setEndDate(new Date(event.target.value));
+		};
+
+		const handlePredict = async () => {
+			setLoadingPrediction(true);
+			if (selectedModel === "") {
+				alert("Please select a model!");
+				setLoadingPrediction(false);
+				return;
+			}
+			if (startDate === null || endDate === null) {
+				alert("Please select a date range!");
+				setLoadingPrediction(false);
+				return;
+			}
+			if (startDate > endDate) {
+				alert("Start date cannot be before end date!");
+				setLoadingPrediction(false);
+				return;
+			}
+			const response = await fetch(`${path}/predict`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					startDate: startDate.toISOString().split(".")[0] + "Z",
+					endDate: endDate.toISOString().split(".")[0] + "Z",
+					algorithm: selectedModel,
+				}),
+			});
+			if (response.status !== 200) {
+				alert("There was an error while fetching the data.");
+				setLoadingPrediction(false);
+				return;
+			}
+			const data = await response.json();
+			setPredictions(data[1]);
+			setLabels(processLabels(data[0]));
+			setLoadingPrediction(false);
+		};
+
+		return (
+			<div className="row align-items-center">
+				<Select setSelectedModel={setSelectedModel} />
+				<div className="mb-3 col">
+					<label className="form-label" htmlFor="startDate">
+						From:
+					</label>
+					<input className="form-control" type="date" name="startDate" id="startDate" onChange={handleStartDate} />
+				</div>
+				<div className="mb-3 col">
+					<label className="form-label" htmlFor="endDate">
+						To:
+					</label>
+					<input className="form-control" type="date" name="endDate" id="endDate" onChange={handleEndDate} />
+				</div>
+				{loadingPrediction ? (
+					<div className="d-flex justify-content-center">
+						<div className="spinner-border" role="status">
+							<span className="sr-only">Loading...</span>
+						</div>
+					</div>
+				) : (
+					<input type="button" value="Predict" className=" col btn btn-outline-success" onClick={handlePredict} />
+				)}
+			</div>
+		);
+	};
 
 	const chartRef = useRef<ChartJS | null>(null);
 
@@ -76,7 +199,10 @@ const CustomLineChart = ({ path, title, yLabel, xLabel, color }: LineProps) => {
 		}
 
 		fetchFunc().then((resp) => {
-			setEntries(resp);
+			const entryValues = resp.map((entry: Entry) => entry.value);
+			const entryLabels = resp.map((entry: Entry) => new Date(entry.timestamp));
+			setLabels(processLabels(entryLabels));
+			setMeasurements(entryValues);
 			if (loading) setLoading(false);
 		});
 	}
@@ -90,48 +216,42 @@ const CustomLineChart = ({ path, title, yLabel, xLabel, color }: LineProps) => {
 		return () => clearInterval(refetchFunc);
 	}, []);
 
-	if (!entries.map) {
+	if (!measurements.map) {
 		return <span className="d-flex justify-content-center">There was an error loading the data.</span>;
 	}
 
-	// Create data for the chart in the x axis
-	const labels = entries.map((entry, index, array) => {
-		const date = new Date(entry.timestamp);
-		const hours = pad(date.getHours());
-		const minutes = pad(date.getMinutes());
-		const timeString = `${hours}:${minutes}`;
-
-		if (index === 0 || (array[index - 1] && new Date(array[index - 1].timestamp).toDateString() !== date.toDateString())) {
-			// Show date on first entry or when the date changes
-			return `${date.toLocaleDateString()}, ${timeString}`;
-		} else if (index % INTERVAL === 0) {
-			// Replace 'n' with your desired interval
-			// Show time at regular intervals
-			return timeString;
-		}
-		// Return null or an empty string for other entries
-		return "";
-	});
-
-	const values = entries.map((entry) => entry.value);
+	// console.log("MEASUREMENTS: ", measurements);
+	// console.log("PREDICTIONS: ", predictions);
+	// console.log("LABELS: ", processedLabels);
 
 	// Set min and max values for the y axis as min and max values from the data with a margin of 5%
-	let min = entries.length > 0 ? Math.min(...values) : 0;
+	let min = measurements.length > 0 ? Math.min(...measurements) : 0;
 	min = min - min * 0.05;
-	let max = entries.length > 0 ? Math.max(...values) : 0;
+	let max = measurements.length > 0 ? Math.max(...measurements) : 0;
 	max = max + max * 0.05;
+
+	const datasets = [
+		{
+			label: "Measurements",
+			data: measurements,
+			borderColor: color,
+			backgroundColor: color,
+		},
+	];
+
+	if (predictions.length > 0) {
+		datasets.push({
+			label: "Predictions",
+			data: predictions,
+			borderColor: predictionColor,
+			backgroundColor: predictionColor,
+		});
+	}
 
 	// Create data for the chart in the y axis
 	const data = {
 		labels,
-		datasets: [
-			{
-				label: "Measurements",
-				data: values,
-				borderColor: color,
-				backgroundColor: color,
-			},
-		],
+		datasets: datasets,
 	};
 
 	// Set options for the chart
@@ -206,6 +326,7 @@ const CustomLineChart = ({ path, title, yLabel, xLabel, color }: LineProps) => {
 		</div>
 	) : (
 		<>
+			<div className="mt-4 ">{modelSelection()}</div>
 			<Line ref={chartRef as any} data={data} options={options as any} className="mb-3 " />
 			<div>
 				<div className="col justify-content-evenly pull-left">

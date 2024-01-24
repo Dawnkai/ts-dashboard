@@ -6,13 +6,14 @@ import ExportButton from "../ExportButton";
 
 const DHTHumidity = () => (
 	<>
-		<ExportButton sensorIds={["2"]}/>
+		<ExportButton sensorIds={["2"]} />
 		<CustomLineChart
 			path="/api/sensor/2"
 			title="Humidity registered by DHT-22 sensor over time"
 			xLabel="Time"
 			yLabel="Humidity [%]"
 			color={COLORS.blue}
+			predictionColor={COLORS.green}
 		/>
 		<BackButton />
 	</>

@@ -6,13 +6,14 @@ import ExportButton from "../ExportButton";
 
 const PIRMovement = () => (
 	<>
-		<ExportButton sensorIds={["7"]}/>
+		<ExportButton sensorIds={["7"]} />
 		<CustomLineChart
 			path="/api/sensor/7"
 			title="Movement registered by PIR sensor over time"
 			xLabel="Time"
 			yLabel="People"
 			color={COLORS.green}
+			predictionColor={COLORS.blue}
 		/>
 		<BackButton />
 	</>

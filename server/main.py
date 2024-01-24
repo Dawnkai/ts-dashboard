@@ -4,11 +4,26 @@ from datetime import timedelta, datetime, timezone
 import requests
 import sqlite3
 
-from flask_jwt_extended import create_access_token, jwt_required, JWTManager, \
-    get_jwt, get_jwt_identity, set_access_cookies, unset_jwt_cookies
+from flask_jwt_extended import (
+    create_access_token,
+    jwt_required,
+    JWTManager,
+    get_jwt,
+    get_jwt_identity,
+    set_access_cookies,
+    unset_jwt_cookies,
+)
 
-from utils import authenticate_user, user_exists, fetch_overview, convert_sensor_data, \
-    flatten, generate_csv_file, update_database, get_db_measurements
+from utils import (
+    authenticate_user,
+    user_exists,
+    fetch_overview,
+    convert_sensor_data,
+    flatten,
+    generate_csv_file,
+    update_database,
+    get_db_measurements,
+)
 
 from ai.CatBoost import TimeSeriesCatBoost
 from ai.KNN import TimeSeriesKNN
@@ -20,7 +35,7 @@ app.config["API"] = "https://api.thingspeak.com"
 app.config["CHANNEL"] = 202842
 app.config["DBPATH"] = "server/database.db"
 # Change this key when deploying to production
-app.config['SECRET_KEY'] = "asdasdasd"
+app.config["SECRET_KEY"] = "asdasdasd"
 # JWT tokens are going to be stored to cookies
 app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
 # How long should the jwt token be valid for
@@ -29,7 +44,7 @@ jwt = JWTManager(app)
 
 
 def get_db():
-    db = getattr(g, '_database', None)
+    db = getattr(g, "_database", None)
     if db is None:
         db = g._database = sqlite3.connect(app.config["DBPATH"])
         db.row_factory = sqlite3.Row
@@ -38,7 +53,7 @@ def get_db():
 
 @app.teardown_appcontext
 def close_connection(exception):
-    db = getattr(g, '_database', None)
+    db = getattr(g, "_database", None)
     if db is not None:
         db.close()
 
@@ -48,7 +63,9 @@ def refresh_expiring_jwts(response):
     try:
         expiry_time = get_jwt()["exp"]
         now = datetime.now(timezone.utc)
-        target_time = datetime.timestamp(now + (app.config["JWT_ACCESS_TOKEN_EXPIRES"] / 2))
+        target_time = datetime.timestamp(
+            now + (app.config["JWT_ACCESS_TOKEN_EXPIRES"] / 2)
+        )
         # If token expires in less than half it's max age, refresh token
         if target_time > expiry_time:
             access_token = create_access_token(identity=get_jwt_identity())
@@ -80,15 +97,15 @@ def register():
 
     if "user_login" not in user_data or "user_password" not in user_data:
         return jsonify({"msg": "Request json has missing fields!"}), 400
-    
+
     if user_exists(db.cursor(), user_data["user_login"]):
         return jsonify({"msg": "User already exists!"}), 400
     db.cursor().execute(
         f"INSERT INTO USER (user_login, user_password) VALUES (?, ?)",
-        [user_data["user_login"], user_data["user_password"]]
+        [user_data["user_login"], user_data["user_password"]],
     )
     db.commit()
-    
+
     response = jsonify({"msg": "User created!"})
     set_access_cookies(response, create_access_token(identity=user_data["user_login"]))
     return response, 201
@@ -104,9 +121,13 @@ def login():
     if "user_login" not in user_data or "user_password" not in user_data:
         return jsonify({"msg": "Request json has missing fields!"}), 400
 
-    if authenticate_user(db.cursor(), user_data["user_login"], user_data["user_password"]):
+    if authenticate_user(
+        db.cursor(), user_data["user_login"], user_data["user_password"]
+    ):
         response = jsonify({"msg": "User logged in!"})
-        set_access_cookies(response, create_access_token(identity=user_data["user_login"]))
+        set_access_cookies(
+            response, create_access_token(identity=user_data["user_login"])
+        )
         return response, 200
     return jsonify({"msg": "Wrong login or password."}), 401
 
@@ -114,7 +135,9 @@ def login():
 @app.route("/overview")
 def get_overview():
     try:
-        resp = requests.get(f"{app.config['API']}/channels/{app.config['CHANNEL']}/feeds.json")
+        resp = requests.get(
+            f"{app.config['API']}/channels/{app.config['CHANNEL']}/feeds.json"
+        )
         if resp.status_code == 200:
             data = resp.json()
             db = get_db()
@@ -136,7 +159,9 @@ def get_overview():
 @jwt_required()
 def get_sensor_data(sensor_id: int):
     try:
-        resp = requests.get(f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/{sensor_id}.json")
+        resp = requests.get(
+            f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/{sensor_id}.json"
+        )
         if resp.status_code == 200:
             data = resp.json()
             db = get_db()
@@ -150,20 +175,30 @@ def get_sensor_data(sensor_id: int):
     finally:
         db = get_db()
         if db:
-            return jsonify(convert_sensor_data(get_db_measurements(db, sensor_id), f"field{sensor_id}")), 200
+            return (
+                jsonify(
+                    convert_sensor_data(
+                        get_db_measurements(db, sensor_id), f"field{sensor_id}"
+                    )
+                ),
+                200,
+            )
         return jsonify({"msg": "Unable to fetch data"}), 500
 
 
 @app.route("/sensor/<sensor_id>/predict", methods=["POST"])
-@jwt_required
+# @jwt_required
 def get_sensor_data_prediction(sensor_id: int):
     if not request.is_json:
         return jsonify({"msg": "Request is not a json"}), 400
 
     predict_params = request.get_json()
     if "startDate" not in predict_params:
-        return jsonify({"msg": "Start date of prediction source data not specified"}), 400
-    
+        return (
+            jsonify({"msg": "Start date of prediction source data not specified"}),
+            400,
+        )
+
     query_params = f"?start={predict_params['startDate']}"
     if "endDate" in query_params:
         query_params += f"&end={query_params['endDate']}"
@@ -171,34 +206,42 @@ def get_sensor_data_prediction(sensor_id: int):
     algorithm = "CatBoost"
     if "algorithm" in predict_params:
         algorithm = predict_params["algorithm"]
-    
+
     model = None
     if algorithm == "CatBoost":
-        model = TimeSeriesCatBoost(n_estimators=1000, learning_rate=0.001, verbose=False)
+        model = TimeSeriesCatBoost(
+            n_estimators=1000, learning_rate=0.001, verbose=False
+        )
     elif algorithm == "KNN":
         model = TimeSeriesKNN(n_neighbors=3, daily=True)
     elif algorithm == "Prophet":
         model = TimeSeriesProphet(growth="linear", n_changepoints=25)
     elif algorithm == "XGBoost":
-        model = TimeSeriesXGBoost(test_size=0.2, params={
-            "n_estimators": 1000,
-            "learning_rate": 0.001
-        })
+        model = TimeSeriesXGBoost(
+            test_size=0.2, params={"n_estimators": 1000, "learning_rate": 0.001}
+        )
     if not model:
         return jsonify({"msg": "Unsupported model selected"}), 400
 
-    api_resp = requests.get(f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/{sensor_id}.json{query_params}")
-    prediction_data = [ val for val in api_resp.json()["feeds"] if val[f"field{sensor_id}"] is not None ]
+    api_resp = requests.get(
+        f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/{sensor_id}.json{query_params}"
+    )
+    prediction_data = [
+        val for val in api_resp.json()["feeds"] if val[f"field{sensor_id}"] is not None
+    ]
     X, y = model.initial_processing(prediction_data, sensor_id)
 
     model.fit2(X, y, process_data=True)
     result = model.predict2(
         start_date=datetime.strptime(predict_params["startDate"], "%Y-%m-%dT%H:%M:%SZ"),
-        end_date=datetime.strptime(predict_params["endDate"], "%Y-%m-%dT%H:%M:%SZ") if "endDate" in predict_params else datetime.now(),
-        interval=timedelta(minutes=1)
+        end_date=datetime.strptime(predict_params["endDate"], "%Y-%m-%dT%H:%M:%SZ")
+        if "endDate" in predict_params
+        else datetime.now(),
+        interval=timedelta(minutes=1),
     )
 
     return jsonify(model.extract_result(result)), 200
+
 
 # The last part of the url is the name of the returned file (export.csv)
 # I tried searching for how to change the name of a file stream in Flask
@@ -236,14 +279,24 @@ def export_csv():
             sensor_data = None
             if export_params["source"] == "api":
                 # Fetch csv data from API
-                api_resp = requests.get(f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/{sensor_id}.json{query_params}")
+                api_resp = requests.get(
+                    f"{app.config['API']}/channels/{app.config['CHANNEL']}/fields/{sensor_id}.json{query_params}"
+                )
                 if api_resp.status_code == 200:
                     sensor_resp = api_resp.json()
-                    sensor_data = convert_sensor_data(sensor_resp["feeds"], f"field{sensor_id}")
+                    sensor_data = convert_sensor_data(
+                        sensor_resp["feeds"], f"field{sensor_id}"
+                    )
             else:
                 # Fetch csv data from database
                 if "startDate" in export_params or "endDate" in export_params:
-                    sensor_data = get_db_measurements(db, sensor_id, 999, export_params["startDate"], export_params["endDate"])
+                    sensor_data = get_db_measurements(
+                        db,
+                        sensor_id,
+                        999,
+                        export_params["startDate"],
+                        export_params["endDate"],
+                    )
                 else:
                     sensor_data = get_db_measurements(db, sensor_id, 999)
             if sensor_data:
@@ -255,20 +308,27 @@ def export_csv():
         overview_data = None
         if export_params["source"] == "api":
             # Fetch csv data from API
-            api_resp = requests.get(f"{app.config['API']}/channels/{app.config['CHANNEL']}/feeds.json{query_params}")
+            api_resp = requests.get(
+                f"{app.config['API']}/channels/{app.config['CHANNEL']}/feeds.json{query_params}"
+            )
             if api_resp.status_code == 200:
                 overview_data = fetch_overview(api_resp.json())
         else:
             # Fetch csv data from database
             if "startDate" in export_params or "endDate" in export_params:
-                overview_data = fetch_overview(get_db_measurements(db, size_limit=999, start_date=export_params["startDate"], end_date=export_params["endDate"]))
+                overview_data = fetch_overview(
+                    get_db_measurements(
+                        db,
+                        size_limit=999,
+                        start_date=export_params["startDate"],
+                        end_date=export_params["endDate"],
+                    )
+                )
             else:
                 overview_data = fetch_overview(get_db_measurements(db, size_limit=999))
         if overview_data:
             # Extract latest overview data from response
-            result = [
-                overview_data[key] for key in overview_data
-            ]
+            result = [overview_data[key] for key in overview_data]
     if len(result) > 0:
         return generate_csv_file(result), {"Content-Type": "text/csv"}
     return jsonify({"msg": "Unable to create csv export"}), 500
