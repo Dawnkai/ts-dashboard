@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Plugin } from "chart.js";
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from "chart.js";
 import { Line } from "react-chartjs-2";
 import zoomPlugin from "chartjs-plugin-zoom";
 
@@ -51,6 +51,23 @@ function processLabels(array: string[]) {
 	});
 }
 
+function findTimestampIndex(array: string[], timestamp: string) {
+	let date = new Date(timestamp);
+	date.setSeconds(0);
+	date.setMilliseconds(0);
+
+	const measurementDateString = date.toISOString();
+
+	for (let i = 0; i < array.length; i++) {
+		const date = new Date(array[i]);
+		date.setSeconds(0);
+		date.setMilliseconds(0);
+		const dateString = date.toISOString();
+		if (dateString === measurementDateString) return i;
+	}
+	return -1;
+}
+
 type SelectProps = {
 	setSelectedModel: (value: string) => void;
 };
@@ -80,14 +97,17 @@ const Select = ({ setSelectedModel }: SelectProps) => {
  */
 const CustomLineChart = ({ path, title, yLabel, xLabel, color, predictionColor }: LineProps) => {
 	const [labels, setLabels] = useState<string[]>([]);
+	const [rawLabels, setRawLabels] = useState<string[]>([]);
 	const [measurements, setMeasurements] = useState([]);
 	const [predictions, setPredictions] = useState([]);
+	const [firstMeasurementsLabel, setFirstMeasurementsLabel] = useState<string | null>();
 
 	const [loading, setLoading] = useState<boolean>(true);
 	const [loadingPrediction, setLoadingPrediction] = useState<boolean>(false);
 
 	const [startDate, setStartDate] = useState<Date | null>(null);
 	const [endDate, setEndDate] = useState<Date | null>(null);
+
 	const [selectedModel, setSelectedModel] = useState<string>("");
 
 	const modelSelection = () => {
@@ -134,6 +154,7 @@ const CustomLineChart = ({ path, title, yLabel, xLabel, color, predictionColor }
 			}
 			const data = await response.json();
 			setPredictions(data[1]);
+			setRawLabels(data[0]);
 			setLabels(processLabels(data[0]));
 			setLoadingPrediction(false);
 		};
@@ -145,13 +166,13 @@ const CustomLineChart = ({ path, title, yLabel, xLabel, color, predictionColor }
 					<label className="form-label" htmlFor="startDate">
 						From:
 					</label>
-					<input className="form-control" type="date" name="startDate" id="startDate" onChange={handleStartDate} />
+					<input className="form-control" type="datetime-local" name="startDate" id="startDate" onChange={handleStartDate} />
 				</div>
 				<div className="mb-3 col">
 					<label className="form-label" htmlFor="endDate">
 						To:
 					</label>
-					<input className="form-control" type="date" name="endDate" id="endDate" onChange={handleEndDate} />
+					<input className="form-control" type="datetime-local" name="endDate" id="endDate" onChange={handleEndDate} />
 				</div>
 				{loadingPrediction ? (
 					<div className="d-flex justify-content-center">
@@ -201,7 +222,8 @@ const CustomLineChart = ({ path, title, yLabel, xLabel, color, predictionColor }
 		fetchFunc().then((resp) => {
 			console.log(resp);
 			const entryValues = resp.map((entry: Entry) => entry.value).reverse();
-			const entryLabels = resp.map((entry: Entry) => new Date(entry.timestamp)).reverse();
+			const entryLabels = resp.map((entry: Entry) => entry.timestamp).reverse();
+			setFirstMeasurementsLabel(entryLabels[0]);
 			setLabels(processLabels(entryLabels));
 			setMeasurements(entryValues);
 			if (loading) setLoading(false);
@@ -217,13 +239,24 @@ const CustomLineChart = ({ path, title, yLabel, xLabel, color, predictionColor }
 		return () => clearInterval(refetchFunc);
 	}, []);
 
+	useEffect(() => {
+		if (firstMeasurementsLabel) {
+			const index = findTimestampIndex(rawLabels, firstMeasurementsLabel);
+			if (index > 0) {
+				console.log("INDEX: ", index);
+				const prevArray: any[] = measurements; // Declare prevArray variable
+				setMeasurements((prevState: never[]) => [...Array(index + 1), ...prevArray] as never[]);
+			}
+		}
+	}, [rawLabels]);
+
 	if (!measurements.map) {
 		return <span className="d-flex justify-content-center">There was an error loading the data.</span>;
 	}
 
 	// console.log("MEASUREMENTS: ", measurements);
 	// console.log("PREDICTIONS: ", predictions);
-	console.log("LABELS: ", labels);
+	// console.log("LABELS: ", labels);
 
 	// Set min and max values for the y axis as min and max values from the data with a margin of 5%
 	let min = measurements.length > 0 ? Math.min(...measurements) : 0;
